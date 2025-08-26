@@ -124,6 +124,17 @@
       <div class="result" id="eventsResult"></div>
     </div>
 
+    <!-- 일별 일정 조회 -->
+    <div class="section">
+      <h2>일별 일정 조회</h2>
+      <div class="form-group">
+        <label>날짜:</label>
+        <input type="date" id="dailyDate" />
+        <button onclick="getDailyEvents()">해당 날짜 일정 조회</button>
+      </div>
+      <div class="result" id="dailyEventsResult"></div>
+    </div>
+
     <!-- 월별 캘린더 -->
     <div class="section">
       <h2>월별 캘린더</h2>
@@ -281,11 +292,14 @@
         }
 
         try {
-          const response = await fetch(`/spaces/${currentSpaceId}/calendar`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title, content, date }),
-          });
+          const response = await fetch(
+            `/api/spaces/${currentSpaceId}/calendars?userId=${currentUserId}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ title, content, date }),
+            }
+          );
 
           const result = await response.json();
           if (response.ok) {
@@ -316,7 +330,9 @@
         }
 
         try {
-          const response = await fetch(`/spaces/${currentSpaceId}/calendar`);
+          const response = await fetch(
+            `/api/spaces/${currentSpaceId}/calendars`
+          );
           if (response.ok) {
             const events = await response.json();
             let html = "<h3>일정 목록:</h3>";
@@ -338,6 +354,45 @@
         }
       }
 
+      // 일별 일정 조회
+      async function getDailyEvents() {
+        if (!currentSpaceId) {
+          alert("먼저 스페이스에 입장하세요");
+          return;
+        }
+
+        const date = document.getElementById("dailyDate").value;
+        if (!date) {
+          alert("날짜를 선택하세요");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `/api/spaces/${currentSpaceId}/calendars/date/${date}`
+          );
+          if (response.ok) {
+            const dailyEvents = await response.json();
+            let html = `<h3>${date} 일정:</h3>`;
+            if (dailyEvents.length === 0) {
+              html += "<p>등록된 일정이 없습니다</p>";
+            } else {
+              dailyEvents.forEach((event) => {
+                html += `<div><strong>${event.title}</strong> - ${event.date} (${event.createdByUsername})</div>`;
+              });
+            }
+            document.getElementById("dailyEventsResult").innerHTML = html;
+          } else {
+            document.getElementById("dailyEventsResult").innerHTML =
+              "조회 실패";
+          }
+        } catch (error) {
+          document.getElementById(
+            "dailyEventsResult"
+          ).innerHTML = `에러: ${error.message}`;
+        }
+      }
+
       // 월별 캘린더 조회
       async function getMonthlyCalendar() {
         if (!currentSpaceId) {
@@ -350,7 +405,7 @@
 
         try {
           const response = await fetch(
-            `/spaces/${currentSpaceId}/calendar/month/${year}/${month}/data`
+            `/api/spaces/${currentSpaceId}/calendars/month/${year}/${month}`
           );
           if (response.ok) {
             const calendarData = await response.json();
@@ -410,6 +465,9 @@
       window.onload = function () {
         const today = new Date();
         document.getElementById("eventDate").value = today
+          .toISOString()
+          .split("T")[0];
+        document.getElementById("dailyDate").value = today
           .toISOString()
           .split("T")[0];
         document.getElementById("calendarYear").value = today.getFullYear();

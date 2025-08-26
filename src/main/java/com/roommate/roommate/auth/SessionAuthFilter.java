@@ -41,6 +41,10 @@ public class SessionAuthFilter implements Filter {
             return;
         }
         
+        // userId를 request attribute로 설정
+        Long userId = (Long) session.getAttribute("userId");
+        httpRequest.setAttribute("userId", userId);
+        
         chain.doFilter(request, response);
     }
 }
