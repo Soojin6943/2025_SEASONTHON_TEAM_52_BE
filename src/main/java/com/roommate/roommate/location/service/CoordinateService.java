@@ -21,13 +21,18 @@ public class CoordinateService {
     public Gu findGuByCoordinates(double longitude, double latitude) {
         log.info("좌표로 구 검색: ({}, {})", longitude, latitude);
         
+        // 좌표 유효성 검증
+        if (longitude < 124.0 || longitude > 132.0 || latitude < 33.0 || latitude > 39.0) {
+            throw new RuntimeException("한국 영역 밖의 좌표입니다. (경도: " + longitude + ", 위도: " + latitude + ")");
+        }
+        
         try {
             // Repository의 findOneContainingPoint 메서드 사용 (MySQL 공간 함수 + SRID 4326)
             return guRepository.findOneContainingPoint(longitude, latitude).orElse(null);
             
         } catch (Exception e) {
             log.error("구 검색 중 오류 발생", e);
-            return null;
+            throw new RuntimeException("구 검색 중 오류가 발생했습니다.");
         }
     }
     
@@ -35,23 +40,37 @@ public class CoordinateService {
     public Dong findDongByCoordinates(double longitude, double latitude) {
         log.info("좌표로 동 검색: ({}, {})", longitude, latitude);
         
+        // 좌표 유효성 검증
+        if (longitude < 124.0 || longitude > 132.0 || latitude < 33.0 || latitude > 39.0) {
+            throw new RuntimeException("한국 영역 밖의 좌표입니다. (경도: " + longitude + ", 위도: " + latitude + ")");
+        }
+        
         try {
-
             return dongRepository.findOneContainingPoint(longitude, latitude).orElse(null);
             
         } catch (Exception e) {
             log.error("동 검색 중 오류 발생", e);
-            return null;
+            throw new RuntimeException("동 검색 중 오류가 발생했습니다.");
         }
     }
     
     // 동 코드로 해당 동이 속한 구 정보 조회
     public Gu findGuByDongCode(String emdCd) {
-        Dong dong = dongRepository.findByEmdCd(emdCd).stream().findFirst().orElse(null);
-        if (dong != null) {
-            return guRepository.findByBjcd(dong.getBjcd()).stream().findFirst().orElse(null);
+        if (emdCd == null || emdCd.trim().isEmpty()) {
+            throw new RuntimeException("동 코드를 입력해주세요.");
         }
-        return null;
+        
+        Dong dong = dongRepository.findByEmdCd(emdCd).stream().findFirst().orElse(null);
+        if (dong == null) {
+            throw new RuntimeException("존재하지 않는 동입니다. (코드: " + emdCd + ")");
+        }
+        
+        Gu gu = guRepository.findByBjcd(dong.getBjcd()).stream().findFirst().orElse(null);
+        if (gu == null) {
+            throw new RuntimeException("동에 해당하는 구를 찾을 수 없습니다. (동 코드: " + emdCd + ")");
+        }
+        
+        return gu;
     }
     
     // 좌표로 구와 동 정보를 모두 조회 (geom 컬럼 제외)

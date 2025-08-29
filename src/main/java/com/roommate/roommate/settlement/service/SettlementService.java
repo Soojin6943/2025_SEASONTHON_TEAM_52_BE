@@ -1,15 +1,15 @@
-package com.roommate.roommate.automoney.service;
+package com.roommate.roommate.settlement.service;
 
-import com.roommate.roommate.automoney.dto.ExpenseCreateRequest;
-import com.roommate.roommate.automoney.dto.ExpenseResponse;
-import com.roommate.roommate.automoney.dto.SettlementDetailResponse;
-import com.roommate.roommate.automoney.dto.SettlementResponse;
-import com.roommate.roommate.automoney.entity.Expense;
-import com.roommate.roommate.automoney.entity.Settlement;
-import com.roommate.roommate.automoney.entity.SettlementExpense;
-import com.roommate.roommate.automoney.repository.ExpenseRepository;
-import com.roommate.roommate.automoney.repository.SettlementExpenseRepository;
-import com.roommate.roommate.automoney.repository.SettlementRepository;
+import com.roommate.roommate.settlement.dto.ExpenseCreateRequest;
+import com.roommate.roommate.settlement.dto.ExpenseResponse;
+import com.roommate.roommate.settlement.dto.SettlementDetailResponse;
+import com.roommate.roommate.settlement.dto.SettlementResponse;
+import com.roommate.roommate.settlement.entity.Expense;
+import com.roommate.roommate.settlement.entity.Settlement;
+import com.roommate.roommate.settlement.entity.SettlementExpense;
+import com.roommate.roommate.settlement.repository.ExpenseRepository;
+import com.roommate.roommate.settlement.repository.SettlementExpenseRepository;
+import com.roommate.roommate.settlement.repository.SettlementRepository;
 import com.roommate.roommate.space.entity.Space;
 import com.roommate.roommate.space.repository.SpaceRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AutoMoneyService {
+public class SettlementService {
     
     private final ExpenseRepository expenseRepository;
     private final SettlementRepository settlementRepository;
@@ -34,15 +34,30 @@ public class AutoMoneyService {
     // 지출 생성 (정산에 추가)
     @Transactional
     public ExpenseResponse createExpense(Long spaceId, Long settlementId, ExpenseCreateRequest request, Long userId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (settlementId == null || settlementId <= 0) {
+            throw new RuntimeException("유효하지 않은 정산 ID입니다.");
+        }
+        if (request == null) {
+            throw new RuntimeException("요청 데이터가 없습니다.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new RuntimeException("스페이스 못 찾음"));
+                .orElseThrow(() -> new RuntimeException("스페이스를 찾을 수 없습니다. (ID: " + spaceId + ")"));
         
         Settlement settlement = settlementRepository.findById(settlementId)
-                .orElseThrow(() -> new RuntimeException("정산 못 찾음"));
+                .orElseThrow(() -> new RuntimeException("정산을 찾을 수 없습니다. (ID: " + settlementId + ")"));
         
         // 정산이 해당 스페이스에 속하는지 확인
         if (!settlement.getSpace().getId().equals(spaceId)) {
-            throw new RuntimeException("정산이 해당 스페이스에 없음");
+            throw new RuntimeException("정산이 해당 스페이스에 속하지 않습니다. (정산 ID: " + settlementId + ", 스페이스 ID: " + spaceId + ")");
         }
         
         // 지출 생성
@@ -75,6 +90,15 @@ public class AutoMoneyService {
     
     // 지출 목록 조회
     public List<ExpenseResponse> getExpensesBySpace(Long spaceId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         List<Expense> expenses = expenseRepository.findBySpaceIdOrderByCreatedAtDesc(spaceId);
         return expenses.stream()
                 .map(this::mapToExpenseResponse)
@@ -83,6 +107,18 @@ public class AutoMoneyService {
     
     // 지출 유형별 조회
     public List<ExpenseResponse> getExpensesByType(Long spaceId, Expense.ExpenseType expenseType) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (expenseType == null) {
+            throw new RuntimeException("지출 유형을 입력해주세요.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         List<Expense> expenses = expenseRepository.findBySpaceIdAndExpenseTypeOrderByCreatedAtDesc(spaceId, expenseType);
         return expenses.stream()
                 .map(this::mapToExpenseResponse)
@@ -91,12 +127,19 @@ public class AutoMoneyService {
     
     // 지출 상세 조회
     public ExpenseResponse getExpenseDetail(Long spaceId, Long expenseId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (expenseId == null || expenseId <= 0) {
+            throw new RuntimeException("유효하지 않은 지출 ID입니다.");
+        }
+        
         Expense expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new RuntimeException("지출 못 찾음"));
+                .orElseThrow(() -> new RuntimeException("지출을 찾을 수 없습니다. (ID: " + expenseId + ")"));
         
         // 지출이 해당 스페이스에 속하는지 확인
         if (!expense.getSpace().getId().equals(spaceId)) {
-            throw new RuntimeException("지출이 해당 스페이스에 없음");
+            throw new RuntimeException("지출이 해당 스페이스에 속하지 않습니다. (지출 ID: " + expenseId + ", 스페이스 ID: " + spaceId + ")");
         }
         
         return mapToExpenseResponse(expense);
@@ -107,8 +150,20 @@ public class AutoMoneyService {
     // 정산 생성 (빈 정산)
     @Transactional
     public SettlementResponse createSettlement(Long spaceId, Long userId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (userId == null || userId <= 0) {
+            throw new RuntimeException("유효하지 않은 사용자 ID입니다.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new RuntimeException("스페이스 못 찾음"));
+                .orElseThrow(() -> new RuntimeException("스페이스를 찾을 수 없습니다. (ID: " + spaceId + ")"));
         
         // 빈 정산 생성 (총액: 0원, 지출: 없음)
         Settlement settlement = Settlement.builder()
@@ -125,6 +180,15 @@ public class AutoMoneyService {
     
     // 정산 목록 조회
     public List<SettlementResponse> getSettlementsBySpace(Long spaceId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         List<Settlement> settlements = settlementRepository.findBySpaceIdOrderByCreatedAtDesc(spaceId);
         return settlements.stream()
                 .map(this::mapToSettlementResponse)
@@ -133,6 +197,18 @@ public class AutoMoneyService {
     
     // 정산 상태별 조회
     public List<SettlementResponse> getSettlementsByStatus(Long spaceId, Settlement.SettlementStatus status) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (status == null) {
+            throw new RuntimeException("정산 상태를 입력해주세요.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         List<Settlement> settlements = settlementRepository.findBySpaceIdAndStatusOrderByCreatedAtDesc(spaceId, status);
         return settlements.stream()
                 .map(this::mapToSettlementResponse)
@@ -141,8 +217,12 @@ public class AutoMoneyService {
     
     // 정산 상세 조회
     public SettlementDetailResponse getSettlementDetail(Long settlementId) {
+        if (settlementId == null || settlementId <= 0) {
+            throw new RuntimeException("유효하지 않은 정산 ID입니다.");
+        }
+        
         Settlement settlement = settlementRepository.findById(settlementId)
-                .orElseThrow(() -> new RuntimeException("정산 못 찾음"));
+                .orElseThrow(() -> new RuntimeException("정산을 찾을 수 없습니다. (ID: " + settlementId + ")"));
         
         List<SettlementExpense> settlementExpenses = settlementExpenseRepository
                 .findBySettlementIdOrderByCreatedAtAsc(settlementId);
@@ -167,8 +247,12 @@ public class AutoMoneyService {
     // 정산 완료
     @Transactional
     public SettlementResponse completeSettlement(Long settlementId) {
+        if (settlementId == null || settlementId <= 0) {
+            throw new RuntimeException("유효하지 않은 정산 ID입니다.");
+        }
+        
         Settlement settlement = settlementRepository.findById(settlementId)
-                .orElseThrow(() -> new RuntimeException("정산 못 찾음"));
+                .orElseThrow(() -> new RuntimeException("정산을 찾을 수 없습니다. (ID: " + settlementId + ")"));
         
         settlement.setStatus(Settlement.SettlementStatus.COMPLETED);
         settlement.setEndDate(LocalDate.now());

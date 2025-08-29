@@ -29,7 +29,7 @@ public class GeoJsonResponse {
     public static class Properties {
         private String name;
         private String code;
-        private String type; // "si" 또는 "dong"
+        private String type; // "gu" 또는 "dong"
     }
     
     @Getter @Setter

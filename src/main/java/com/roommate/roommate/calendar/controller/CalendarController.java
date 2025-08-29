@@ -30,6 +30,16 @@ public class CalendarController {
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "일정 생성 요청") @RequestBody CalendarCreateRequest request,
             @Parameter(description = "사용자 ID") @RequestParam Long userId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (request == null) {
+            throw new RuntimeException("요청 데이터가 없습니다.");
+        }
+        if (userId == null || userId <= 0) {
+            throw new RuntimeException("유효하지 않은 사용자 ID입니다.");
+        }
+        
         CalendarResponse response = calendarService.createCalendar(spaceId, request, userId);
         return ResponseEntity.ok(response);
     }
@@ -40,6 +50,10 @@ public class CalendarController {
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "시작 날짜") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(description = "종료 날짜") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
         
         List<CalendarResponse> calendars;
         if (startDate != null && endDate != null) {
@@ -56,7 +70,14 @@ public class CalendarController {
     public ResponseEntity<CalendarResponse> getCalendar(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "일정 ID") @PathVariable Long calendarId) {
-        CalendarResponse response = calendarService.getCalendarById(calendarId);
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (calendarId == null || calendarId <= 0) {
+            throw new RuntimeException("유효하지 않은 캘린더 ID입니다.");
+        }
+        
+        CalendarResponse response = calendarService.getCalendarById(spaceId, calendarId);
         return ResponseEntity.ok(response);
     }
     
@@ -66,6 +87,10 @@ public class CalendarController {
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "년도") @PathVariable int year,
             @Parameter(description = "월") @PathVariable int month) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        
         MonthlyCalendarResponse response = calendarService.getMonthlyCalendar(spaceId, year, month);
         return ResponseEntity.ok(response);
     }
@@ -75,6 +100,13 @@ public class CalendarController {
     public ResponseEntity<List<CalendarResponse>> getCalendarsByDate(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "조회할 날짜 (YYYY-MM-DD 형식)") @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (date == null) {
+            throw new RuntimeException("날짜를 입력해주세요.");
+        }
+        
         List<CalendarResponse> calendars = calendarService.getCalendarsByDate(spaceId, date);
         return ResponseEntity.ok(calendars);
     }
@@ -85,7 +117,17 @@ public class CalendarController {
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "일정 ID") @PathVariable Long calendarId,
             @Parameter(description = "일정 수정 요청") @RequestBody CalendarUpdateRequest request) {
-        CalendarResponse response = calendarService.updateCalendar(calendarId, request);
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (calendarId == null || calendarId <= 0) {
+            throw new RuntimeException("유효하지 않은 캘린더 ID입니다.");
+        }
+        if (request == null) {
+            throw new RuntimeException("요청 데이터가 없습니다.");
+        }
+        
+        CalendarResponse response = calendarService.updateCalendar(spaceId, calendarId, request);
         return ResponseEntity.ok(response);
     }
     
@@ -93,8 +135,15 @@ public class CalendarController {
     @Operation(summary = "일정 삭제")
     public ResponseEntity<Void> deleteCalendar(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
-            @Parameter(description = "일정 ID") @PathVariable Long calendarId) {
-        calendarService.deleteCalendar(calendarId);
+            @Parameter(description = "캘린더 ID") @PathVariable Long calendarId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (calendarId == null || calendarId <= 0) {
+            throw new RuntimeException("유효하지 않은 캘린더 ID입니다.");
+        }
+        
+        calendarService.deleteCalendar(spaceId, calendarId);
         return ResponseEntity.noContent().build();
     }
 }

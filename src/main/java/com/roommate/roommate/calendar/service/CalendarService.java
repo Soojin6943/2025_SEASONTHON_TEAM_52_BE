@@ -28,8 +28,20 @@ public class CalendarService {
     
     @Transactional
     public CalendarResponse createCalendar(Long spaceId, CalendarCreateRequest request, Long userId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (request == null) {
+            throw new RuntimeException("요청 데이터가 없습니다.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new RuntimeException("Space not found"));
+                .orElseThrow(() -> new RuntimeException("스페이스를 찾을 수 없습니다. (ID: " + spaceId + ")"));
         
         SharedCalendar calendar = SharedCalendar.builder()
                 .space(space)
@@ -44,6 +56,15 @@ public class CalendarService {
     }
     
     public List<CalendarResponse> getCalendarsBySpace(Long spaceId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         List<SharedCalendar> calendars = calendarRepository.findBySpaceIdOrderByDateAsc(spaceId);
         return calendars.stream()
                 .map(this::mapToResponse)
@@ -51,6 +72,21 @@ public class CalendarService {
     }
     
     public List<CalendarResponse> getCalendarsByDateRange(Long spaceId, LocalDate startDate, LocalDate endDate) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (startDate == null || endDate == null) {
+            throw new RuntimeException("시작일과 종료일을 입력해주세요.");
+        }
+        if (startDate.isAfter(endDate)) {
+            throw new RuntimeException("시작일은 종료일보다 이전이어야 합니다.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         List<SharedCalendar> calendars = calendarRepository.findBySpaceIdAndDateBetween(spaceId, startDate, endDate);
         return calendars.stream()
                 .map(this::mapToResponse)
@@ -58,19 +94,64 @@ public class CalendarService {
     }
     
     public List<CalendarResponse> getCalendarsByDate(Long spaceId, LocalDate date) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (date == null) {
+            throw new RuntimeException("날짜를 입력해주세요.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         List<SharedCalendar> calendars = calendarRepository.findBySpaceIdAndDate(spaceId, date);
         return calendars.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
     
-    public CalendarResponse getCalendarById(Long calendarId) {
+    public CalendarResponse getCalendarById(Long spaceId, Long calendarId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (calendarId == null || calendarId <= 0) {
+            throw new RuntimeException("유효하지 않은 캘린더 ID입니다.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         SharedCalendar calendar = calendarRepository.findById(calendarId)
-                .orElseThrow(() -> new RuntimeException("Calendar not found"));
+                .orElseThrow(() -> new RuntimeException("캘린더를 찾을 수 없습니다. (ID: " + calendarId + ")"));
+        
+        // 캘린더가 해당 스페이스에 속하는지 확인
+        if (!calendar.getSpace().getId().equals(spaceId)) {
+            throw new RuntimeException("캘린더가 해당 스페이스에 속하지 않습니다. (캘린더 ID: " + calendarId + ", 스페이스 ID: " + spaceId + ")");
+        }
+        
         return mapToResponse(calendar);
     }
     
     public MonthlyCalendarResponse getMonthlyCalendar(Long spaceId, int year, int month) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (year < 1900 || year > 2100) {
+            throw new RuntimeException("유효하지 않은 연도입니다. (연도: " + year + ")");
+        }
+        if (month < 1 || month > 12) {
+            throw new RuntimeException("유효하지 않은 월입니다. (월: " + month + ")");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         // 해당 월의 시작일과 종료일 계산
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDate startDate = yearMonth.atDay(1);
@@ -90,9 +171,29 @@ public class CalendarService {
     }
     
     @Transactional
-    public CalendarResponse updateCalendar(Long calendarId, CalendarUpdateRequest request) {
+    public CalendarResponse updateCalendar(Long spaceId, Long calendarId, CalendarUpdateRequest request) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (calendarId == null || calendarId <= 0) {
+            throw new RuntimeException("유효하지 않은 캘린더 ID입니다.");
+        }
+        if (request == null) {
+            throw new RuntimeException("요청 데이터가 없습니다.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
         SharedCalendar calendar = calendarRepository.findById(calendarId)
-                .orElseThrow(() -> new RuntimeException("Calendar not found"));
+                .orElseThrow(() -> new RuntimeException("캘린더를 찾을 수 없습니다. (ID: " + calendarId + ")"));
+        
+        // 캘린더가 해당 스페이스에 속하는지 확인
+        if (!calendar.getSpace().getId().equals(spaceId)) {
+            throw new RuntimeException("캘린더가 해당 스페이스에 속하지 않습니다. (캘린더 ID: " + calendarId + ", 스페이스 ID: " + spaceId + ")");
+        }
         
         calendar.setTitle(request.getTitle());
         calendar.setContent(request.getContent());
@@ -102,7 +203,27 @@ public class CalendarService {
     }
     
     @Transactional
-    public void deleteCalendar(Long calendarId) {
+    public void deleteCalendar(Long spaceId, Long calendarId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (calendarId == null || calendarId <= 0) {
+            throw new RuntimeException("유효하지 않은 캘린더 ID입니다.");
+        }
+        
+        // 스페이스 존재 여부 확인
+        if (!spaceRepository.existsById(spaceId)) {
+            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        }
+        
+        SharedCalendar calendar = calendarRepository.findById(calendarId)
+                .orElseThrow(() -> new RuntimeException("캘린더를 찾을 수 없습니다. (ID: " + calendarId + ")"));
+        
+        // 캘린더가 해당 스페이스에 속하는지 확인
+        if (!calendar.getSpace().getId().equals(spaceId)) {
+            throw new RuntimeException("캘린더가 해당 스페이스에 속하지 않습니다. (캘린더 ID: " + calendarId + ", 스페이스 ID: " + spaceId + ")");
+        }
+        
         calendarRepository.deleteById(calendarId);
     }
     
