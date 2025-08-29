@@ -25,7 +25,7 @@ public class CalendarController {
     private final CalendarService calendarService;
     
     @PostMapping
-    @Operation(summary = "일정 생성", description = "새로운 일정을 생성합니다.")
+    @Operation(summary = "일정 생성")
     public ResponseEntity<CalendarResponse> createCalendar(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "일정 생성 요청") @RequestBody CalendarCreateRequest request,
@@ -35,7 +35,7 @@ public class CalendarController {
     }
     
     @GetMapping
-    @Operation(summary = "일정 목록 조회", description = "스페이스의 일정 목록을 조회합니다.")
+    @Operation(summary = "일정 목록 조회")
     public ResponseEntity<List<CalendarResponse>> getCalendars(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "시작 날짜") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -52,7 +52,7 @@ public class CalendarController {
     }
     
     @GetMapping("/{calendarId}")
-    @Operation(summary = "일정 상세 조회", description = "특정 일정의 상세 정보를 조회합니다.")
+    @Operation(summary = "일정 상세 조회")
     public ResponseEntity<CalendarResponse> getCalendar(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "일정 ID") @PathVariable Long calendarId) {
@@ -61,7 +61,7 @@ public class CalendarController {
     }
     
     @GetMapping("/month/{year}/{month}")
-    @Operation(summary = "월별 캘린더 조회", description = "특정 년월의 캘린더 데이터를 조회합니다.")
+    @Operation(summary = "월별 캘린더 조회")
     public ResponseEntity<MonthlyCalendarResponse> getMonthlyCalendar(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "년도") @PathVariable int year,
@@ -71,7 +71,7 @@ public class CalendarController {
     }
     
     @GetMapping("/date/{date}")
-    @Operation(summary = "일별 일정 조회", description = "특정 날짜의 모든 일정을 조회합니다.")
+    @Operation(summary = "일별 일정 조회")
     public ResponseEntity<List<CalendarResponse>> getCalendarsByDate(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "조회할 날짜 (YYYY-MM-DD 형식)") @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -80,7 +80,7 @@ public class CalendarController {
     }
     
     @PutMapping("/{calendarId}")
-    @Operation(summary = "일정 수정", description = "기존 일정을 수정합니다.")
+    @Operation(summary = "일정 수정")
     public ResponseEntity<CalendarResponse> updateCalendar(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "일정 ID") @PathVariable Long calendarId,
@@ -90,7 +90,7 @@ public class CalendarController {
     }
     
     @DeleteMapping("/{calendarId}")
-    @Operation(summary = "일정 삭제", description = "일정을 삭제합니다.")
+    @Operation(summary = "일정 삭제")
     public ResponseEntity<Void> deleteCalendar(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "일정 ID") @PathVariable Long calendarId) {

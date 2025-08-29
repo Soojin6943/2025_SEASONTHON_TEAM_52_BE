@@ -36,4 +36,34 @@ out/
 ### VS Code ###
 .vscode/
 
+# 환경변수 파일
 .env
+.env.local
+.env.development
+.env.production
+
+# 민감한 정보가 포함된 HTML 파일들
+src/main/resources/static/map.html
+src/main/resources/static/post-location-example.html
+
+# 로그 파일
+*.log
+logs/
+
+# 임시 파일
+*.tmp
+*.temp
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+
+# 백업 파일
+*.bak
+*.backup
+
+# 설정 파일 (민감한 정보 포함 가능)
+config/
+application-local.properties
+application-dev.properties
+application-prod.properties

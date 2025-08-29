@@ -27,7 +27,7 @@ public class AutoMoneyController {
     
     // 지출 생성 (정산에 추가)
     @PostMapping("/settlements/{settlementId}/expenses")
-    @Operation(summary = "정산에 지출 추가", description = "기존 정산에 새로운 지출을 추가합니다.")
+    @Operation(summary = "정산에 지출 추가")
     public ResponseEntity<ExpenseResponse> createExpense(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "정산 ID") @PathVariable Long settlementId,
@@ -40,7 +40,7 @@ public class AutoMoneyController {
     
     // 지출 목록 조회
     @GetMapping("/expenses")
-    @Operation(summary = "지출 목록 조회", description = "스페이스의 지출 목록을 조회합니다.")
+    @Operation(summary = "지출 목록 조회")
     public ResponseEntity<List<ExpenseResponse>> getExpenses(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId) {
         List<ExpenseResponse> expenses = autoMoneyService.getExpensesBySpace(spaceId);
@@ -49,7 +49,7 @@ public class AutoMoneyController {
     
     // 지출 유형별 조회
     @GetMapping("/expenses/type/{expenseType}")
-    @Operation(summary = "지출 유형별 조회", description = "특정 유형의 지출 목록을 조회합니다.")
+    @Operation(summary = "지출 유형별 조회")
     public ResponseEntity<List<ExpenseResponse>> getExpensesByType(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "지출 유형") @PathVariable Expense.ExpenseType expenseType) {
@@ -59,7 +59,7 @@ public class AutoMoneyController {
     
     // 지출 상세 조회
     @GetMapping("/expenses/{expenseId}")
-    @Operation(summary = "지출 상세 조회", description = "개별 지출의 상세 정보를 조회합니다.")
+    @Operation(summary = "지출 상세 조회")
     public ResponseEntity<ExpenseResponse> getExpenseDetail(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "지출 ID") @PathVariable Long expenseId) {
@@ -71,7 +71,7 @@ public class AutoMoneyController {
     
     // 정산 생성 (빈 정산)
     @PostMapping("/settlements")
-    @Operation(summary = "정산 생성", description = "빈 정산을 생성합니다. 지출은 나중에 추가할 수 있습니다.")
+    @Operation(summary = "정산 생성")
     public ResponseEntity<SettlementResponse> createSettlement(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             HttpServletRequest httpRequest) {
@@ -82,7 +82,7 @@ public class AutoMoneyController {
     
     // 정산 목록 조회
     @GetMapping("/settlements")
-    @Operation(summary = "정산 목록 조회", description = "스페이스의 정산 목록을 조회합니다.")
+    @Operation(summary = "정산 목록 조회")
     public ResponseEntity<List<SettlementResponse>> getSettlements(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId) {
         List<SettlementResponse> settlements = autoMoneyService.getSettlementsBySpace(spaceId);
@@ -91,7 +91,7 @@ public class AutoMoneyController {
     
     // 정산 상태별 조회
     @GetMapping("/settlements/status/{status}")
-    @Operation(summary = "정산 상태별 조회", description = "특정 상태의 정산 목록을 조회합니다.")
+    @Operation(summary = "정산 상태별 조회")
     public ResponseEntity<List<SettlementResponse>> getSettlementsByStatus(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "정산 상태") @PathVariable Settlement.SettlementStatus status) {
@@ -101,7 +101,7 @@ public class AutoMoneyController {
     
     // 정산 상세 조회
     @GetMapping("/settlements/{settlementId}")
-    @Operation(summary = "정산 상세 조회", description = "정산의 상세 정보와 포함된 지출 목록을 조회합니다.")
+    @Operation(summary = "정산 상세 조회")
     public ResponseEntity<SettlementDetailResponse> getSettlementDetail(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "정산 ID") @PathVariable Long settlementId) {
@@ -111,7 +111,7 @@ public class AutoMoneyController {
     
     // 정산 완료
     @PostMapping("/settlements/{settlementId}/complete")
-    @Operation(summary = "정산 완료", description = "정산을 완료 상태로 변경합니다.")
+    @Operation(summary = "정산 완료")
     public ResponseEntity<SettlementResponse> completeSettlement(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
             @Parameter(description = "정산 ID") @PathVariable Long settlementId) {
