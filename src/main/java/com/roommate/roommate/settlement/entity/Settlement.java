@@ -1,4 +1,4 @@
-package com.roommate.roommate.automoney.entity;
+package com.roommate.roommate.settlement.entity;
 
 import com.roommate.roommate.space.entity.Space;
 import io.swagger.v3.oas.annotations.media.Schema;

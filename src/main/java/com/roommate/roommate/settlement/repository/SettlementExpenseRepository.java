@@ -1,6 +1,6 @@
-package com.roommate.roommate.automoney.repository;
+package com.roommate.roommate.settlement.repository;
 
-import com.roommate.roommate.automoney.entity.SettlementExpense;
+import com.roommate.roommate.settlement.entity.SettlementExpense;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

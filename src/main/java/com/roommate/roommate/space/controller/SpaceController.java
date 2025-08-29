@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Space")
+@Tag(name = "스페이스")
 @RestController
 @RequestMapping("/spaces")
 @RequiredArgsConstructor
@@ -23,6 +23,10 @@ public class SpaceController {
     @Operation(summary = "스페이스 생성")
     @PostMapping
     public ResponseEntity<SpaceResponse> createSpace(@RequestBody @Valid SpaceCreateRequest request, HttpSession session) {
+        if (request == null) {
+            throw new RuntimeException("요청 데이터가 없습니다.");
+        }
+        
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).build();
@@ -50,6 +54,10 @@ public class SpaceController {
     @Operation(summary = "초대 코드 조회")
     @GetMapping("/{spaceId}/invite-code")
     public ResponseEntity<InviteCodeResponse> getInviteCode(@PathVariable Long spaceId, HttpSession session) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).build();
@@ -61,6 +69,10 @@ public class SpaceController {
     @Operation(summary = "초대 코드로 스페이스 입장")
     @PostMapping("/join")
     public ResponseEntity<SpaceResponse> joinSpace(@RequestParam String inviteCode, HttpSession session) {
+        if (inviteCode == null || inviteCode.trim().isEmpty()) {
+            throw new RuntimeException("초대 코드를 입력해주세요.");
+        }
+        
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(401).build();

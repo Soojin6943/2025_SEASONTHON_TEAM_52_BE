@@ -32,20 +32,53 @@ public class LocationService {
     
     // 특정 구 데이터를 GeoJSON으로 변환
     public GeoJsonResponse getGuGeoJsonByBjcd(String bjcd) {
+        if (bjcd == null || bjcd.trim().isEmpty()) {
+            throw new RuntimeException("구 코드를 입력해주세요.");
+        }
+        
         String sql = "SELECT gu_name AS name, bjcd AS code, ST_AsGeoJSON(geom) AS geom_json FROM gu WHERE bjcd = ?";
-        return convertToGeoJson(sql, "gu", bjcd);
+        GeoJsonResponse response = convertToGeoJson(sql, "gu", bjcd);
+        
+        // 결과가 비어있으면 존재하지 않는 구
+        if (response.getFeatures().isEmpty()) {
+            throw new RuntimeException("존재하지 않는 구입니다. (코드: " + bjcd + ")");
+        }
+        
+        return response;
     }
     
     // 특정 구의 동 데이터를 GeoJSON으로 변환
     public GeoJsonResponse getDongGeoJsonByBjcd(String bjcd) {
+        if (bjcd == null || bjcd.trim().isEmpty()) {
+            throw new RuntimeException("구 코드를 입력해주세요.");
+        }
+        
         String sql = "SELECT dong_name AS name, emd_cd AS code, ST_AsGeoJSON(geom) AS geom_json FROM dong WHERE bjcd = ?";
-        return convertToGeoJson(sql, "dong", bjcd);
+        GeoJsonResponse response = convertToGeoJson(sql, "dong", bjcd);
+        
+        // 결과가 비어있으면 존재하지 않는 구
+        if (response.getFeatures().isEmpty()) {
+            throw new RuntimeException("존재하지 않는 구입니다. (코드: " + bjcd + ")");
+        }
+        
+        return response;
     }
     
     // 특정 동 데이터를 GeoJSON으로 변환
     public GeoJsonResponse getDongGeoJsonByEmdCd(String emdCd) {
+        if (emdCd == null || emdCd.trim().isEmpty()) {
+            throw new RuntimeException("동 코드를 입력해주세요.");
+        }
+        
         String sql = "SELECT dong_name AS name, emd_cd AS code, ST_AsGeoJSON(geom) AS geom_json FROM dong WHERE emd_cd = ?";
-        return convertToGeoJson(sql, "dong", emdCd);
+        GeoJsonResponse response = convertToGeoJson(sql, "dong", emdCd);
+        
+        // 결과가 비어있으면 존재하지 않는 동
+        if (response.getFeatures().isEmpty()) {
+            throw new RuntimeException("존재하지 않는 동입니다. (코드: " + emdCd + ")");
+        }
+        
+        return response;
     }
     
     // SQL 쿼리 결과를 GeoJSON으로 변환

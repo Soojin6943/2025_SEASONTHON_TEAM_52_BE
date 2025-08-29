@@ -1,6 +1,6 @@
-package com.roommate.roommate.automoney.dto;
+package com.roommate.roommate.settlement.dto;
 
-import com.roommate.roommate.automoney.entity.Settlement;
+import com.roommate.roommate.settlement.entity.Settlement;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

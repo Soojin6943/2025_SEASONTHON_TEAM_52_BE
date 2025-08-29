@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>룸메이트 규칙 관리 테스트</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+      }
+      .weekdays {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .weekday-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .weekday-checkbox input {
+        width: auto;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 10px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .result {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🏠 룸메이트 규칙 관리</h1>
+
+      <form id="ruleForm">
+        <div class="form-group">
+          <label for="spaceId">스페이스 ID:</label>
+          <input type="number" id="spaceId" value="1" required />
+        </div>
+
+        <div class="form-group">
+          <label for="content">규칙 내용:</label>
+          <textarea
+            id="content"
+            rows="3"
+            placeholder="예: 집청소 당번: 김태희"
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>요일 선택:</label>
+          <div class="weekdays">
+            <div class="weekday-checkbox">
+              <input type="checkbox" id="monday" value="MONDAY" />
+              <label for="monday">월요일</label>
+            </div>
+            <div class="weekday-checkbox">
+              <input type="checkbox" id="tuesday" value="TUESDAY" />
+              <label for="tuesday">화요일</label>
+            </div>
+            <div class="weekday-checkbox">
+              <input type="checkbox" id="wednesday" value="WEDNESDAY" />
+              <label for="wednesday">수요일</label>
+            </div>
+            <div class="weekday-checkbox">
+              <input type="checkbox" id="thursday" value="THURSDAY" />
+              <label for="thursday">목요일</label>
+            </div>
+            <div class="weekday-checkbox">
+              <input type="checkbox" id="friday" value="FRIDAY" />
+              <label for="friday">금요일</label>
+            </div>
+            <div class="weekday-checkbox">
+              <input type="checkbox" id="saturday" value="SATURDAY" />
+              <label for="saturday">토요일</label>
+            </div>
+            <div class="weekday-checkbox">
+              <input type="checkbox" id="sunday" value="SUNDAY" />
+              <label for="sunday">일요일</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="weekInterval">주기:</label>
+          <select id="weekInterval" required>
+            <option value="1">1주마다</option>
+            <option value="2" selected>2주마다</option>
+            <option value="3">3주마다</option>
+            <option value="4">4주마다</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="startDate">시작 날짜:</label>
+          <input type="date" id="startDate" required />
+        </div>
+
+        <div class="form-group">
+          <label for="endDate">종료 날짜 (선택사항):</label>
+          <input type="date" id="endDate" />
+        </div>
+
+        <button type="submit">규칙 생성</button>
+        <button type="button" onclick="getRules()">전체 규칙 조회</button>
+        <button type="button" onclick="getTodayRules()">오늘 규칙 조회</button>
+      </form>
+
+      <div id="result" class="result" style="display: none"></div>
+    </div>
+
+    <script>
+      // 오늘 날짜를 시작 날짜로 설정
+      document.getElementById("startDate").value = new Date()
+        .toISOString()
+        .split("T")[0];
+
+      // 수요일 체크 (예시)
+      document.getElementById("wednesday").checked = true;
+
+      document
+        .getElementById("ruleForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const weekdays = Array.from(
+            document.querySelectorAll('input[type="checkbox"]:checked')
+          ).map((cb) => cb.value);
+
+          if (weekdays.length === 0) {
+            alert("최소 하나의 요일을 선택해주세요.");
+            return;
+          }
+
+          const ruleData = {
+            spaceId: parseInt(document.getElementById("spaceId").value),
+            content: document.getElementById("content").value,
+            weekdays: weekdays,
+            weekInterval: parseInt(
+              document.getElementById("weekInterval").value
+            ),
+            startDate: document.getElementById("startDate").value,
+            endDate: document.getElementById("endDate").value || null,
+          };
+
+                     try {
+             const response = await fetch("/api/rules", {
+               method: "POST",
+               headers: {
+                 "Content-Type": "application/json",
+               },
+               body: JSON.stringify(ruleData),
+             });
+ 
+             if (response.ok) {
+               const result = await response.json();
+               showResult("규칙이 성공적으로 생성되었습니다!", result);
+             } else {
+               const errorResponse = await response.json();
+               let errorMessage = "규칙 생성 실패";
+               if (errorResponse.message) {
+                 errorMessage += ": " + errorResponse.message;
+               }
+               showResult("규칙 생성 실패", errorMessage);
+             }
+           } catch (error) {
+             showResult("네트워크 에러", "서버와의 연결에 실패했습니다: " + error.message);
+           }
+        });
+
+             async function getRules() {
+         const spaceId = document.getElementById("spaceId").value;
+ 
+         try {
+           const response = await fetch(`/api/rules/space/${spaceId}`);
+           if (response.ok) {
+             const rules = await response.json();
+             showResult("스페이스 규칙 목록", rules);
+           } else {
+             const errorResponse = await response.json();
+             let errorMessage = "규칙을 가져올 수 없습니다";
+             if (errorResponse.message) {
+               errorMessage += ": " + errorResponse.message;
+             }
+             showResult("규칙 조회 실패", errorMessage);
+           }
+         } catch (error) {
+           showResult("네트워크 에러", "서버와의 연결에 실패했습니다: " + error.message);
+         }
+       }
+ 
+       async function getTodayRules() {
+         const spaceId = document.getElementById("spaceId").value;
+ 
+         try {
+           const response = await fetch(`/api/rules/space/${spaceId}/today`);
+           if (response.ok) {
+             const rules = await response.json();
+             if (rules.length === 0) {
+               showResult("오늘 규칙", "오늘 실행되는 규칙이 없습니다.");
+             } else {
+               showResult("오늘 실행되는 규칙", rules);
+             }
+           } else {
+             const errorResponse = await response.json();
+             let errorMessage = "오늘 규칙을 가져올 수 없습니다";
+             if (errorResponse.message) {
+               errorMessage += ": " + errorResponse.message;
+             }
+             showResult("오늘 규칙 조회 실패", errorMessage);
+           }
+         } catch (error) {
+           showResult("네트워크 에러", "서버와의 연결에 실패했습니다: " + error.message);
+         }
+       }
+
+      function showResult(title, data) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+      }
+    </script>
+  </body>
+</html>

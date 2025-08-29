@@ -23,11 +23,21 @@ public class SpaceService {
 
     @Transactional
     public SpaceResponse createSpace(SpaceCreateRequest request, Long userId) {
+        if (request == null) {
+            throw new RuntimeException("요청 데이터가 없습니다.");
+        }
+        if (userId == null || userId <= 0) {
+            throw new RuntimeException("유효하지 않은 사용자 ID입니다.");
+        }
+        if (request.name() == null || request.name().trim().isEmpty()) {
+            throw new RuntimeException("스페이스 이름을 입력해주세요.");
+        }
+        
         // 초대 코드 생성 (간단하게 UUID 사용)
         String inviteCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         
         Space space = Space.builder()
-                .name(request.name())
+                .name(request.name().trim())
                 .inviteCode(inviteCode)
                 .build();
         
@@ -46,6 +56,10 @@ public class SpaceService {
     }
 
     public SpaceResponse getMySpace(Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new RuntimeException("유효하지 않은 사용자 ID입니다.");
+        }
+        
         SpaceMember membership = spaceMemberRepository.findByUserId(userId)
                 .stream()
                 .findFirst()
@@ -59,20 +73,31 @@ public class SpaceService {
     }
 
     public InviteCodeResponse getInviteCode(Long spaceId) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        
         Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new RuntimeException("스페이스를 찾을 수 없습니다"));
+                .orElseThrow(() -> new RuntimeException("스페이스를 찾을 수 없습니다. (ID: " + spaceId + ")"));
         
         return new InviteCodeResponse(space.getInviteCode(), space.getName());
     }
 
     @Transactional
     public SpaceResponse joinSpace(String inviteCode, Long userId) {
-        Space space = spaceRepository.findByInviteCode(inviteCode)
-                .orElseThrow(() -> new RuntimeException("초대 코드가 유효하지 않습니다"));
+        if (inviteCode == null || inviteCode.trim().isEmpty()) {
+            throw new RuntimeException("초대 코드를 입력해주세요.");
+        }
+        if (userId == null || userId <= 0) {
+            throw new RuntimeException("유효하지 않은 사용자 ID입니다.");
+        }
+        
+        Space space = spaceRepository.findByInviteCode(inviteCode.trim())
+                .orElseThrow(() -> new RuntimeException("초대 코드가 유효하지 않습니다. (코드: " + inviteCode + ")"));
         
         // 이미 멤버인지 확인
         if (spaceMemberRepository.existsBySpaceIdAndUserId(space.getId(), userId)) {
-            throw new RuntimeException("이미 스페이스의 멤버입니다");
+            throw new RuntimeException("이미 스페이스의 멤버입니다. (사용자 ID: " + userId + ")");
         }
         
         // 현재 멤버 수 조회
