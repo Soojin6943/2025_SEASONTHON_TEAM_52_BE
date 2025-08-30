@@ -12,12 +12,13 @@ import java.util.List;
 @Repository
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     
-    @Query("SELECT e FROM Expense e WHERE e.space.id = :spaceId ORDER BY e.createdAt DESC")
-    List<Expense> findBySpaceIdOrderByCreatedAtDesc(@Param("spaceId") Long spaceId);
+
     
-    @Query("SELECT e FROM Expense e WHERE e.space.id = :spaceId AND e.expenseType = :expenseType ORDER BY e.createdAt DESC")
-    List<Expense> findBySpaceIdAndExpenseTypeOrderByCreatedAtDesc(@Param("spaceId") Long spaceId, @Param("expenseType") Expense.ExpenseType expenseType);
+    // 정산별 지출 조회
+    @Query("SELECT e FROM Expense e WHERE e.settlement.id = :settlementId ORDER BY e.createdAt ASC")
+    List<Expense> findBySettlementIdOrderByCreatedAtAsc(@Param("settlementId") Long settlementId);
     
-    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.space.id = :spaceId")
-    BigDecimal getTotalExpenseBySpaceId(@Param("spaceId") Long spaceId);
+    // 정산별 총 지출 금액
+    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.settlement.id = :settlementId")
+    BigDecimal getTotalExpenseBySettlementId(@Param("settlementId") Long settlementId);
 }

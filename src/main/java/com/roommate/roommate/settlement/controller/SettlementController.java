@@ -7,12 +7,14 @@ import com.roommate.roommate.settlement.dto.SettlementResponse;
 import com.roommate.roommate.settlement.entity.Expense;
 import com.roommate.roommate.settlement.entity.Settlement;
 import com.roommate.roommate.settlement.service.SettlementService;
+import com.roommate.roommate.settlement.service.AutoSettlementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -24,9 +26,64 @@ import java.util.List;
 public class SettlementController {
     
     private final SettlementService settlementService;
+    private final AutoSettlementService autoSettlementService;
+    
+    // OCR을 통한 영수증 자동 지출 생성
+    @PostMapping("/{settlementId}/expenses/receipt/ocr")
+    @Operation(summary = "영수증 이미지로 자동 지출 생성")
+    public ResponseEntity<ExpenseResponse> createExpenseFromReceiptOcr(
+            @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
+            @Parameter(description = "정산 ID") @PathVariable Long settlementId,
+            @Parameter(description = "영수증 이미지") @RequestParam("image") MultipartFile image,
+            HttpServletRequest httpRequest) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (settlementId == null || settlementId <= 0) {
+            throw new RuntimeException("유효하지 않은 정산 ID입니다.");
+        }
+        if (image == null || image.isEmpty()) {
+            throw new RuntimeException("이미지 파일이 없습니다.");
+        }
+        
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        if (userId == null || userId <= 0) {
+            throw new RuntimeException("유효하지 않은 사용자 ID입니다.");
+        }
+        
+        ExpenseResponse response = autoSettlementService.createExpenseFromReceipt(image, spaceId, settlementId, userId);
+        return ResponseEntity.ok(response);
+    }
+    
+    // OCR을 통한 공과금 자동 지출 생성
+    @PostMapping("/{settlementId}/expenses/utility/ocr")
+    @Operation(summary = "공과금 이미지로 자동 지출 생성")
+    public ResponseEntity<ExpenseResponse> createExpenseFromUtilityOcr(
+            @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
+            @Parameter(description = "정산 ID") @PathVariable Long settlementId,
+            @Parameter(description = "공과금 이미지") @RequestParam("image") MultipartFile image,
+            HttpServletRequest httpRequest) {
+        if (spaceId == null || spaceId <= 0) {
+            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (settlementId == null || settlementId <= 0) {
+            throw new RuntimeException("유효하지 않은 정산 ID입니다.");
+        }
+        if (image == null || image.isEmpty()) {
+            throw new RuntimeException("이미지 파일이 없습니다.");
+        }
+        
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        if (userId == null || userId <= 0) {
+            throw new RuntimeException("유효하지 않은 사용자 ID입니다.");
+        }
+        
+        ExpenseResponse response = autoSettlementService.createExpenseFromUtility(image, spaceId, settlementId, userId);
+        return ResponseEntity.ok(response);
+    }
     
     // 지출 생성 (정산에 추가)
-    @PostMapping("/settlements/{settlementId}/expenses")
+    @PostMapping("/{settlementId}/expenses")
     @Operation(summary = "정산에 지출 추가")
     public ResponseEntity<ExpenseResponse> createExpense(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
@@ -52,55 +109,46 @@ public class SettlementController {
         return ResponseEntity.ok(response);
     }
     
-    // 지출 목록 조회
-    @GetMapping("/expenses")
-    @Operation(summary = "지출 목록 조회")
-    public ResponseEntity<List<ExpenseResponse>> getExpenses(
-            @Parameter(description = "스페이스 ID") @PathVariable Long spaceId) {
-        if (spaceId == null || spaceId <= 0) {
-            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
-        }
-        
-        List<ExpenseResponse> expenses = settlementService.getExpensesBySpace(spaceId);
-        return ResponseEntity.ok(expenses);
-    }
-    
-    // 지출 유형별 조회
-    @GetMapping("/expenses/type/{expenseType}")
-    @Operation(summary = "지출 유형별 조회")
-    public ResponseEntity<List<ExpenseResponse>> getExpensesByType(
+    // 정산의 지출 목록 조회
+    @GetMapping("/{settlementId}/expenses")
+    @Operation(summary = "정산의 지출 목록 조회")
+    public ResponseEntity<List<ExpenseResponse>> getExpensesBySettlement(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
-            @Parameter(description = "지출 유형") @PathVariable Expense.ExpenseType expenseType) {
+            @Parameter(description = "정산 ID") @PathVariable Long settlementId) {
         if (spaceId == null || spaceId <= 0) {
             throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
         }
-        if (expenseType == null) {
-            throw new RuntimeException("지출 유형을 입력해주세요.");
+        if (settlementId == null || settlementId <= 0) {
+            throw new RuntimeException("유효하지 않은 정산 ID입니다.");
         }
         
-        List<ExpenseResponse> expenses = settlementService.getExpensesByType(spaceId, expenseType);
+        List<ExpenseResponse> expenses = settlementService.getExpensesBySettlement(settlementId);
         return ResponseEntity.ok(expenses);
     }
     
-    // 지출 상세 조회
-    @GetMapping("/expenses/{expenseId}")
-    @Operation(summary = "지출 상세 조회")
+    // 정산의 지출 상세 조회
+    @GetMapping("/{settlementId}/expenses/{expenseId}")
+    @Operation(summary = "정산의 지출 상세 조회")
     public ResponseEntity<ExpenseResponse> getExpenseDetail(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
+            @Parameter(description = "정산 ID") @PathVariable Long settlementId,
             @Parameter(description = "지출 ID") @PathVariable Long expenseId) {
         if (spaceId == null || spaceId <= 0) {
             throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+        }
+        if (settlementId == null || settlementId <= 0) {
+            throw new RuntimeException("유효하지 않은 정산 ID입니다.");
         }
         if (expenseId == null || expenseId <= 0) {
             throw new RuntimeException("유효하지 않은 지출 ID입니다.");
         }
         
-        ExpenseResponse expense = settlementService.getExpenseDetail(spaceId, expenseId);
+        ExpenseResponse expense = settlementService.getExpenseDetail(settlementId, expenseId);
         return ResponseEntity.ok(expense);
     }
     
     // 정산 생성 (빈 정산)
-    @PostMapping("/settlements")
+    @PostMapping
     @Operation(summary = "정산 생성")
     public ResponseEntity<SettlementResponse> createSettlement(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
@@ -119,7 +167,7 @@ public class SettlementController {
     }
     
     // 정산 목록 조회
-    @GetMapping("/settlements")
+    @GetMapping
     @Operation(summary = "정산 목록 조회")
     public ResponseEntity<List<SettlementResponse>> getSettlements(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId) {
@@ -132,7 +180,7 @@ public class SettlementController {
     }
     
     // 정산 상태별 조회
-    @GetMapping("/settlements/status/{status}")
+    @GetMapping("/status/{status}")
     @Operation(summary = "정산 상태별 조회")
     public ResponseEntity<List<SettlementResponse>> getSettlementsByStatus(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
@@ -149,7 +197,7 @@ public class SettlementController {
     }
     
     // 정산 상세 조회
-    @GetMapping("/settlements/{settlementId}")
+    @GetMapping("/{settlementId}")
     @Operation(summary = "정산 상세 조회")
     public ResponseEntity<SettlementDetailResponse> getSettlementDetail(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
@@ -166,7 +214,7 @@ public class SettlementController {
     }
     
     // 정산 완료
-    @PostMapping("/settlements/{settlementId}/complete")
+    @PostMapping("/{settlementId}/complete")
     @Operation(summary = "정산 완료")
     public ResponseEntity<SettlementResponse> completeSettlement(
             @Parameter(description = "스페이스 ID") @PathVariable Long spaceId,
