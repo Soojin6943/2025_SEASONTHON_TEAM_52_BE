@@ -8,6 +8,9 @@ on:
   push:
     branches: ["main"]
 
+    # 포크된 레포에서만 실행
+    if: github.repository == 'Soojin6943/2025_SEASONTHON_TEAM_52_BE'
+
 # 실행될 작업들
 jobs:
   build-and-deploy: # build and deploy ??
