@@ -1,6 +1,6 @@
 package com.roommate.roommate.settlement.entity;
 
-import com.roommate.roommate.space.entity.Space;
+import com.roommate.roommate.settlement.entity.Expense;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,6 +8,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "settlements")
@@ -22,10 +23,9 @@ public class Settlement {
     @Schema(description = "정산 ID")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "space_id", nullable = false)
-    @Schema(description = "소속 스페이스")
-    private Space space;
+    @Column(name = "space_id", nullable = false)
+    @Schema(description = "소속 스페이스 ID")
+    private Long spaceId;
 
     @Column(name = "title", nullable = false, length = 100)
     @Schema(description = "정산 제목 (자동 생성)")
@@ -55,14 +55,24 @@ public class Settlement {
     @Column(name = "created_at", nullable = false)
     @Schema(description = "생성 날짜")
     private LocalDateTime createdAt;
+    
+    @OneToMany(mappedBy = "settlement", fetch = FetchType.LAZY)
+    @Schema(description = "연결된 지출 목록")
+    private List<Expense> expenses;
 
             @PrePersist
         protected void onCreate() {
-            createdAt = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now();
+            createdAt = now;
+            
             // 정산 제목 자동 생성: "2025년 1월 15일 정산"
             if (title == null) {
-                LocalDateTime now = LocalDateTime.now();
-                title = String.format("%d년 %d월 %d일", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
+                title = String.format("%d년 %d월 %d일 정산", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
+            }
+            
+            // 정산 시작 날짜 자동 설정
+            if (startDate == null) {
+                startDate = now.toLocalDate();
             }
         }
 

@@ -22,15 +22,29 @@ public class SessionAuthFilter implements Filter {
         
         String requestURI = httpRequest.getRequestURI();
         
-        // 인증X
+        // 인증X - 정적 파일들도 포함
         if (requestURI.startsWith("/auth/") || 
             requestURI.startsWith("/swagger-ui/") || 
             requestURI.startsWith("/swagger-ui.html") ||
             requestURI.startsWith("/v3/api-docs") ||
             requestURI.startsWith("/swagger-resources/") ||
             requestURI.startsWith("/webjars/") ||
+
+            requestURI.startsWith("/api/test/") ||
+            requestURI.equals("/") ||
+            requestURI.endsWith(".html") ||
+            requestURI.endsWith(".css") ||
+            requestURI.endsWith(".js") ||
+            requestURI.endsWith(".ico") ||
+            requestURI.endsWith(".png") ||
+            requestURI.endsWith(".jpg") ||
+            requestURI.endsWith(".jpeg") ||
+            requestURI.endsWith(".gif") ||
+            requestURI.endsWith(".svg")) {
+
             requestURI.startsWith("/health") ||
             requestURI.equals("/")) {
+
             chain.doFilter(request, response);
             return;
         }

@@ -6,12 +6,8 @@ import com.roommate.roommate.settlement.dto.SettlementDetailResponse;
 import com.roommate.roommate.settlement.dto.SettlementResponse;
 import com.roommate.roommate.settlement.entity.Expense;
 import com.roommate.roommate.settlement.entity.Settlement;
-import com.roommate.roommate.settlement.entity.SettlementExpense;
 import com.roommate.roommate.settlement.repository.ExpenseRepository;
-import com.roommate.roommate.settlement.repository.SettlementExpenseRepository;
 import com.roommate.roommate.settlement.repository.SettlementRepository;
-import com.roommate.roommate.space.entity.Space;
-import com.roommate.roommate.space.repository.SpaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +24,6 @@ public class SettlementService {
     
     private final ExpenseRepository expenseRepository;
     private final SettlementRepository settlementRepository;
-    private final SettlementExpenseRepository settlementExpenseRepository;
-    private final SpaceRepository spaceRepository;
     
     // 지출 생성 (정산에 추가)
     @Transactional
@@ -44,91 +38,67 @@ public class SettlementService {
             throw new RuntimeException("요청 데이터가 없습니다.");
         }
         
-        // 스페이스 존재 여부 확인
-        if (!spaceRepository.existsById(spaceId)) {
-            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
-        }
-        
-        Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new RuntimeException("스페이스를 찾을 수 없습니다. (ID: " + spaceId + ")"));
-        
         Settlement settlement = settlementRepository.findById(settlementId)
                 .orElseThrow(() -> new RuntimeException("정산을 찾을 수 없습니다. (ID: " + settlementId + ")"));
         
         // 정산이 해당 스페이스에 속하는지 확인
-        if (!settlement.getSpace().getId().equals(spaceId)) {
+        if (!settlement.getSpaceId().equals(spaceId)) {
             throw new RuntimeException("정산이 해당 스페이스에 속하지 않습니다. (정산 ID: " + settlementId + ", 스페이스 ID: " + spaceId + ")");
         }
         
         // 지출 생성
         Expense expense = Expense.builder()
-                .space(space)
+                .settlement(settlement)
                 .expenseType(request.getExpenseType())
                 .category(request.getCategory())
                 .amount(request.getAmount())
+                .itemsJson(request.getItems())
                 .attachmentUrl(request.getAttachmentUrl())
                 .createdBy(userId)
                 .build();
         
         Expense saved = expenseRepository.save(expense);
         
-        // 정산-지출 연결 생성
-        SettlementExpense settlementExpense = SettlementExpense.builder()
-                .settlement(settlement)
-                .expense(saved)
-                .build();
-        
-        settlementExpenseRepository.save(settlementExpense);
-        
         // 정산 총 금액 업데이트
         settlement.setTotalAmount(settlement.getTotalAmount().add(request.getAmount()));
-        
         settlementRepository.save(settlement);
+        
+        System.out.println("지출 생성 완료: 정산ID=" + settlementId + ", 지출ID=" + saved.getId() + ", 금액=" + request.getAmount());
         
         return mapToExpenseResponse(saved);
     }
     
-    // 지출 목록 조회
-    public List<ExpenseResponse> getExpensesBySpace(Long spaceId) {
-        if (spaceId == null || spaceId <= 0) {
-            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+
+    
+    // 정산의 지출 목록 조회
+    public List<ExpenseResponse> getExpensesBySettlement(Long settlementId) {
+        if (settlementId == null || settlementId <= 0) {
+            throw new RuntimeException("유효하지 않은 정산 ID입니다.");
         }
         
-        // 스페이스 존재 여부 확인
-        if (!spaceRepository.existsById(spaceId)) {
-            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
+        // 정산 존재 여부 확인
+        if (!settlementRepository.existsById(settlementId)) {
+            throw new RuntimeException("존재하지 않는 정산입니다. (ID: " + settlementId + ")");
         }
         
-        List<Expense> expenses = expenseRepository.findBySpaceIdOrderByCreatedAtDesc(spaceId);
-        return expenses.stream()
+        // Settlement 엔티티에서 직접 조회
+        Settlement settlement = settlementRepository.findById(settlementId)
+                .orElseThrow(() -> new RuntimeException("정산을 찾을 수 없습니다. (ID: " + settlementId + ")"));
+        
+        if (settlement.getExpenses() == null) {
+            return List.of();
+        }
+        
+        return settlement.getExpenses().stream()
+                .sorted((e1, e2) -> e1.getCreatedAt().compareTo(e2.getCreatedAt()))
                 .map(this::mapToExpenseResponse)
                 .collect(Collectors.toList());
     }
     
-    // 지출 유형별 조회
-    public List<ExpenseResponse> getExpensesByType(Long spaceId, Expense.ExpenseType expenseType) {
-        if (spaceId == null || spaceId <= 0) {
-            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
-        }
-        if (expenseType == null) {
-            throw new RuntimeException("지출 유형을 입력해주세요.");
-        }
-        
-        // 스페이스 존재 여부 확인
-        if (!spaceRepository.existsById(spaceId)) {
-            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
-        }
-        
-        List<Expense> expenses = expenseRepository.findBySpaceIdAndExpenseTypeOrderByCreatedAtDesc(spaceId, expenseType);
-        return expenses.stream()
-                .map(this::mapToExpenseResponse)
-                .collect(Collectors.toList());
-    }
-    
-    // 지출 상세 조회
-    public ExpenseResponse getExpenseDetail(Long spaceId, Long expenseId) {
-        if (spaceId == null || spaceId <= 0) {
-            throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
+    // 정산의 지출 상세 조회
+    public ExpenseResponse getExpenseDetail(Long settlementId, Long expenseId) {
+        if (settlementId == null || settlementId <= 0) {
+            throw new RuntimeException("유효하지 않은 정산 ID입니다.");
         }
         if (expenseId == null || expenseId <= 0) {
             throw new RuntimeException("유효하지 않은 지출 ID입니다.");
@@ -137,9 +107,9 @@ public class SettlementService {
         Expense expense = expenseRepository.findById(expenseId)
                 .orElseThrow(() -> new RuntimeException("지출을 찾을 수 없습니다. (ID: " + expenseId + ")"));
         
-        // 지출이 해당 스페이스에 속하는지 확인
-        if (!expense.getSpace().getId().equals(spaceId)) {
-            throw new RuntimeException("지출이 해당 스페이스에 속하지 않습니다. (지출 ID: " + expenseId + ", 스페이스 ID: " + spaceId + ")");
+        // 지출이 해당 정산에 속하는지 확인
+        if (!expense.getSettlement().getId().equals(settlementId)) {
+            throw new RuntimeException("지출이 해당 정산에 속하지 않습니다. (지출 ID: " + expenseId + ", 정산 ID: " + settlementId + ")");
         }
         
         return mapToExpenseResponse(expense);
@@ -157,17 +127,9 @@ public class SettlementService {
             throw new RuntimeException("유효하지 않은 사용자 ID입니다.");
         }
         
-        // 스페이스 존재 여부 확인
-        if (!spaceRepository.existsById(spaceId)) {
-            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
-        }
-        
-        Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new RuntimeException("스페이스를 찾을 수 없습니다. (ID: " + spaceId + ")"));
-        
         // 빈 정산 생성 (총액: 0원, 지출: 없음)
         Settlement settlement = Settlement.builder()
-                .space(space)
+                .spaceId(spaceId)  // spaceId만 설정
                 .totalAmount(BigDecimal.ZERO)  // 초기 총액: 0원
                 .status(Settlement.SettlementStatus.PENDING)
                 .createdBy(userId)
@@ -182,11 +144,6 @@ public class SettlementService {
     public List<SettlementResponse> getSettlementsBySpace(Long spaceId) {
         if (spaceId == null || spaceId <= 0) {
             throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
-        }
-        
-        // 스페이스 존재 여부 확인
-        if (!spaceRepository.existsById(spaceId)) {
-            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
         }
         
         List<Settlement> settlements = settlementRepository.findBySpaceIdOrderByCreatedAtDesc(spaceId);
@@ -204,11 +161,6 @@ public class SettlementService {
             throw new RuntimeException("정산 상태를 입력해주세요.");
         }
         
-        // 스페이스 존재 여부 확인
-        if (!spaceRepository.existsById(spaceId)) {
-            throw new RuntimeException("존재하지 않는 스페이스입니다. (ID: " + spaceId + ")");
-        }
-        
         List<Settlement> settlements = settlementRepository.findBySpaceIdAndStatusOrderByCreatedAtDesc(spaceId, status);
         return settlements.stream()
                 .map(this::mapToSettlementResponse)
@@ -224,11 +176,29 @@ public class SettlementService {
         Settlement settlement = settlementRepository.findById(settlementId)
                 .orElseThrow(() -> new RuntimeException("정산을 찾을 수 없습니다. (ID: " + settlementId + ")"));
         
-        List<SettlementExpense> settlementExpenses = settlementExpenseRepository
-                .findBySettlementIdOrderByCreatedAtAsc(settlementId);
+        System.out.println("정산 조회: " + settlement.getId() + ", 제목: " + settlement.getTitle());
         
-        List<ExpenseResponse> expenses = settlementExpenses.stream()
-                .map(se -> mapToExpenseResponse(se.getExpense()))
+        // Settlement 엔티티에서 직접 조회
+        if (settlement.getExpenses() == null) {
+            return SettlementDetailResponse.builder()
+                    .id(settlement.getId())
+                    .title(settlement.getTitle())
+                    .totalAmount(settlement.getTotalAmount())
+                    .status(settlement.getStatus())
+                    .startDate(settlement.getStartDate())
+                    .endDate(settlement.getEndDate())
+                    .createdBy(settlement.getCreatedBy())
+                    .createdAt(settlement.getCreatedAt())
+                    .expenses(List.of())
+                    .build();
+        }
+        
+        List<ExpenseResponse> expenseResponses = settlement.getExpenses().stream()
+                .sorted((e1, e2) -> e1.getCreatedAt().compareTo(e2.getCreatedAt()))
+                .map(expense -> {
+                    System.out.println("지출 정보: ID=" + expense.getId() + ", 카테고리=" + expense.getCategory() + ", 금액=" + expense.getAmount());
+                    return mapToExpenseResponse(expense);
+                })
                 .collect(Collectors.toList());
         
         return SettlementDetailResponse.builder()
@@ -240,7 +210,7 @@ public class SettlementService {
                 .endDate(settlement.getEndDate())
                 .createdBy(settlement.getCreatedBy())
                 .createdAt(settlement.getCreatedAt())
-                .expenses(expenses)
+                .expenses(expenseResponses)
                 .build();
     }
     
@@ -267,6 +237,7 @@ public class SettlementService {
                 .expenseType(expense.getExpenseType())
                 .category(expense.getCategory())
                 .amount(expense.getAmount())
+                .itemsJson(expense.getItemsJson())
                 .attachmentUrl(expense.getAttachmentUrl())
                 .createdBy(expense.getCreatedBy())
                 .createdAt(expense.getCreatedAt())

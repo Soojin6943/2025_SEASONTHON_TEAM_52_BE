@@ -3,6 +3,7 @@ package com.roommate.roommate.space.service;
 import com.roommate.roommate.space.dto.SpaceCreateRequest;
 import com.roommate.roommate.space.dto.SpaceResponse;
 import com.roommate.roommate.space.dto.InviteCodeResponse;
+import java.util.List;
 import com.roommate.roommate.space.entity.Space;
 import com.roommate.roommate.space.entity.SpaceMember;
 import com.roommate.roommate.space.entity.SpaceRole;
@@ -55,12 +56,15 @@ public class SpaceService {
         return SpaceResponse.from(savedSpace);
     }
 
+
+
+    @Transactional(readOnly = true)
     public SpaceResponse getMySpace(Long userId) {
         if (userId == null || userId <= 0) {
             throw new RuntimeException("유효하지 않은 사용자 ID입니다.");
         }
         
-        SpaceMember membership = spaceMemberRepository.findByUserId(userId)
+        SpaceMember membership = spaceMemberRepository.findByUserIdWithSpace(userId)
                 .stream()
                 .findFirst()
                 .orElse(null);
@@ -69,7 +73,18 @@ public class SpaceService {
             return null;
         }
         
-        return SpaceResponse.from(membership.getSpace());
+        Space space = membership.getSpace();
+        
+        // 현재 멤버 수 계산
+        long currentMembers = spaceMemberRepository.countBySpaceId(space.getId());
+        
+        return new SpaceResponse(
+                space.getId(),
+                space.getName(),
+                space.getMaxMembers(),
+                (int) currentMembers,
+                space.getCreatedAt()
+        );
     }
 
     public InviteCodeResponse getInviteCode(Long spaceId) {
@@ -119,4 +134,6 @@ public class SpaceService {
         
         return SpaceResponse.from(space);
     }
+
+
 }

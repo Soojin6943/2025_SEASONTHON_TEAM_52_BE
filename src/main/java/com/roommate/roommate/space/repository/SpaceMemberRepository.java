@@ -2,6 +2,7 @@ package com.roommate.roommate.space.repository;
 
 import com.roommate.roommate.space.entity.SpaceMember;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,6 +12,10 @@ import java.util.Optional;
 public interface SpaceMemberRepository extends JpaRepository<SpaceMember, Long> {
     List<SpaceMember> findBySpaceId(Long spaceId);
     List<SpaceMember> findByUserId(Long userId);
+    
+    @Query("SELECT sm FROM SpaceMember sm JOIN FETCH sm.space WHERE sm.userId = :userId")
+    List<SpaceMember> findByUserIdWithSpace(Long userId);
+    
     Optional<SpaceMember> findBySpaceIdAndUserId(Long spaceId, Long userId);
     boolean existsBySpaceIdAndUserId(Long spaceId, Long userId);
     long countBySpaceId(Long spaceId);

@@ -27,6 +27,9 @@ public class ExpenseCreateRequest {
     @Schema(description = "지출 금액", example = "25000.00")
     private BigDecimal amount;
     
+    @Schema(description = "품목 목록 JSON (영수증: 상품 배열, 공과금: null)")
+    private String items;
+    
     @Schema(description = "첨부자료 URL")
     private String attachmentUrl;
 }
