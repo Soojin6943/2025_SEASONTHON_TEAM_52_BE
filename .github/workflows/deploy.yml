@@ -29,6 +29,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      #  gradlew 파일에 실행 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
       # Gradle 빌드
       # Gradle Wrapper를 사용해 빌드
       # -x test 옵션 - 빌드 시 테스트를 생력하여 시간을 단축
