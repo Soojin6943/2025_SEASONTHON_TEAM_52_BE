@@ -83,8 +83,4 @@ jobs:
             # --network="host": 컨테이너가 호스트(EC2)의 네트워크를 직접 사용하도록 설정. 
             #                   => 이 설정을 통해 컨테이너 안의 앱이 localhost(127.0.0.1)로 EC2에 설치된 MySQL에 접속
             # -e: 환경변수 설정. GitHub Secrets에 저장된 DB 정보를 컨테이너에 전달
-            docker run -d --name roommate-container -p 8080:8080 --network="host" \
-            -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} \
-            -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} \
-            -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            ${{ secrets.DOCKER_USERNAME }}/roommate-app:latest
+            docker run -d --name roommate-container -p 8080:8080 --network="host" -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} ${{ secrets.DOCKER_USERNAME }}/roommate-app:latest
