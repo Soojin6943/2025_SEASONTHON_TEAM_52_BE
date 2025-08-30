@@ -16,7 +16,8 @@ public record SpaceResponse(
         @Schema(description = "최대 멤버 수", example = "4")
         Integer maxMembers,
         
-
+        @Schema(description = "현재 멤버 수", example = "2")
+        Integer currentMembers,
         
         @Schema(description = "생성일", example = "2025-08-12T10:00:00")
         LocalDateTime createdAt
@@ -26,6 +27,7 @@ public record SpaceResponse(
                 space.getId(),
                 space.getName(),
                 space.getMaxMembers(),
+                null, // currentMembers는 별도로 계산 필요
                 space.getCreatedAt()
         );
     }

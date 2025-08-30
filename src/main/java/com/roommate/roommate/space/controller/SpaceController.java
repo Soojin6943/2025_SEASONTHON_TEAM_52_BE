@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "스페이스")
 @RestController
-@RequestMapping("/spaces")
+@RequestMapping("/api/spaces")
 @RequiredArgsConstructor
 public class SpaceController {
 
@@ -36,7 +36,7 @@ public class SpaceController {
     }
 
     @Operation(summary = "내 스페이스 조회")
-    @GetMapping("/my")
+    @GetMapping
     public ResponseEntity<SpaceResponse> getMySpace(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
@@ -50,6 +50,8 @@ public class SpaceController {
         
         return ResponseEntity.ok(space);
     }
+
+
 
     @Operation(summary = "초대 코드 조회")
     @GetMapping("/{spaceId}/invite-code")
@@ -65,6 +67,8 @@ public class SpaceController {
         
         return ResponseEntity.ok(spaceService.getInviteCode(spaceId));
     }
+
+
 
     @Operation(summary = "초대 코드로 스페이스 입장")
     @PostMapping("/join")
