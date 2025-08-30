@@ -29,6 +29,7 @@ public class SessionAuthFilter implements Filter {
             requestURI.startsWith("/v3/api-docs") ||
             requestURI.startsWith("/swagger-resources/") ||
             requestURI.startsWith("/webjars/") ||
+            requestURI.startsWith("/health") ||
             requestURI.equals("/")) {
             chain.doFilter(request, response);
             return;
