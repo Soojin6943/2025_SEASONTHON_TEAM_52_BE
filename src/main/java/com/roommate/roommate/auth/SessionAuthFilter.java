@@ -29,6 +29,7 @@ public class SessionAuthFilter implements Filter {
             requestURI.startsWith("/v3/api-docs") ||
             requestURI.startsWith("/swagger-resources/") ||
             requestURI.startsWith("/webjars/") ||
+
             requestURI.startsWith("/api/test/") ||
             requestURI.equals("/") ||
             requestURI.endsWith(".html") ||
@@ -40,6 +41,10 @@ public class SessionAuthFilter implements Filter {
             requestURI.endsWith(".jpeg") ||
             requestURI.endsWith(".gif") ||
             requestURI.endsWith(".svg")) {
+
+            requestURI.startsWith("/health") ||
+            requestURI.equals("/")) {
+
             chain.doFilter(request, response);
             return;
         }
