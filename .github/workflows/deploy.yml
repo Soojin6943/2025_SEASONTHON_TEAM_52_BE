@@ -87,9 +87,17 @@ jobs:
             export SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            export CLOVA_OCR_RECEIPT_URL="${{ secrets.CLOVA_OCR_RECEIPT_URL }}"
+            export CLOVA_OCR_RECEIPT_SECRET="${{ secrets.CLOVA_OCR_RECEIPT_SECRET }}"
+            export CLOVA_OCR_UTILITY_URL="${{ secrets.CLOVA_OCR_UTILITY_URL }}"
+            export CLOVA_OCR_UTILITY_SECRET="${{ secrets.CLOVA_OCR_UTILITY_SECRET }}"
           
             docker run -d --name roommate-container -p 8080:8080 --network="host" \
               -e SPRING_DATASOURCE_URL \
               -e SPRING_DATASOURCE_USERNAME \
               -e SPRING_DATASOURCE_PASSWORD \
+              -e CLOVA_OCR_RECEIPT_URL \
+              -e CLOVA_OCR_RECEIPT_SECRET \
+              -e CLOVA_OCR_UTILITY_URL \
+              -e CLOVA_OCR_UTILITY_SECRET \
               ${{ secrets.DOCKER_USERNAME }}/roommate-app:latest
