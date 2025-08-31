@@ -31,6 +31,9 @@ public class CalendarResponse {
     @Schema(description = "생성자 ID", example = "1")
     private Long createdBy;
     
+    @Schema(description = "작성자 이름", example = "두둥탁")
+    private String createdByName;
+    
     @Schema(description = "생성 시간", example = "2025-01-15T10:00:00")
     private LocalDateTime createdAt;
 }

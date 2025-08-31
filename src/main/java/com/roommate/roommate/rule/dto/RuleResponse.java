@@ -15,7 +15,10 @@ public class RuleResponse {
     private Integer weekInterval;
     private LocalDate startDate;
     private LocalDate endDate;
-
+    
+    private Long createdBy; // 작성자 ID
+    private String createdByName; // 작성자 이름
+    
     private LocalDate createdAt;
     private LocalDate updatedAt;
 }

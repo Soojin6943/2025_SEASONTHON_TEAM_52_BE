@@ -8,6 +8,8 @@ import com.roommate.roommate.calendar.entity.SharedCalendar;
 import com.roommate.roommate.calendar.repository.SharedCalendarRepository;
 import com.roommate.roommate.space.entity.Space;
 import com.roommate.roommate.space.repository.SpaceRepository;
+import com.roommate.roommate.auth.User;
+import com.roommate.roommate.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ public class CalendarService {
     
     private final SharedCalendarRepository calendarRepository;
     private final SpaceRepository spaceRepository;
+    private final UserRepository userRepository;
     
     @Transactional
     public CalendarResponse createCalendar(Long spaceId, CalendarCreateRequest request, Long userId) {
@@ -240,12 +243,16 @@ public class CalendarService {
     }
     
     private MonthlyCalendarResponse.CalendarEvent mapToCalendarEvent(SharedCalendar calendar) {
+        // User 정보 조회하여 이름 설정
+        User user = userRepository.findById(calendar.getCreatedBy()).orElse(null);
+        
         return MonthlyCalendarResponse.CalendarEvent.builder()
                 .id(calendar.getId())
                 .title(calendar.getTitle())
                 .content(calendar.getContent())
                 .date(calendar.getDate())
                 .createdBy(calendar.getCreatedBy())
+                .createdByName(user != null ? user.getUsername() : "알 수 없음")
                 .build();
     }
     
@@ -303,12 +310,16 @@ public class CalendarService {
     }
     
     private CalendarResponse mapToResponse(SharedCalendar calendar) {
+        // User 정보 조회하여 이름 설정
+        User user = userRepository.findById(calendar.getCreatedBy()).orElse(null);
+        
         return CalendarResponse.builder()
                 .id(calendar.getId())
                 .title(calendar.getTitle())
                 .content(calendar.getContent())
                 .date(calendar.getDate())
                 .createdBy(calendar.getCreatedBy())
+                .createdByName(user != null ? user.getUsername() : "알 수 없음")
                 .createdAt(calendar.getCreatedAt())
                 .build();
     }
