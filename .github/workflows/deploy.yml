@@ -91,6 +91,8 @@ jobs:
             export CLOVA_OCR_RECEIPT_SECRET="${{ secrets.CLOVA_OCR_RECEIPT_SECRET }}"
             export CLOVA_OCR_UTILITY_URL="${{ secrets.CLOVA_OCR_UTILITY_URL }}"
             export CLOVA_OCR_UTILITY_SECRET="${{ secrets.CLOVA_OCR_UTILITY_SECRET }}"
+            export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
+            export OPENAI_MODEL="${{ secrets.OPENAI_MODEL }}"
           
             docker run -d --name roommate-container -p 8080:8080 --network="host" \
               -e SPRING_DATASOURCE_URL \
@@ -100,4 +102,6 @@ jobs:
               -e CLOVA_OCR_RECEIPT_SECRET \
               -e CLOVA_OCR_UTILITY_URL \
               -e CLOVA_OCR_UTILITY_SECRET \
+              -e OPENAI_API_KEY \
+              -e OPENAI_MODEL \
               ${{ secrets.DOCKER_USERNAME }}/roommate-app:latest
