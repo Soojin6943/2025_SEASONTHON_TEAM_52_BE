@@ -6,6 +6,8 @@ import com.roommate.roommate.rule.entity.Rule;
 import com.roommate.roommate.rule.repository.RuleRepository;
 import com.roommate.roommate.space.entity.Space;
 import com.roommate.roommate.space.repository.SpaceRepository;
+import com.roommate.roommate.auth.User;
+import com.roommate.roommate.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +24,11 @@ public class RuleService {
     
     private final RuleRepository ruleRepository;
     private final SpaceRepository spaceRepository;
+    private final UserRepository userRepository;
     
     // 규칙 생성
     @Transactional
-    public RuleResponse createRule(Long spaceId, RuleCreateRequest request) {
+    public RuleResponse createRule(Long spaceId, RuleCreateRequest request, Long userId) {
         if (spaceId == null || spaceId <= 0) {
             throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
         }
@@ -55,6 +58,7 @@ public class RuleService {
                 .weekInterval(request.getWeekInterval())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
+                .createdBy(userId)
                 .build();
         
         Rule savedRule = ruleRepository.save(rule);
@@ -169,6 +173,9 @@ public class RuleService {
     
     // DTO 변환
     private RuleResponse convertToResponse(Rule rule) {
+        // User 정보 조회하여 이름 설정
+        User user = userRepository.findById(rule.getCreatedBy()).orElse(null);
+        
         RuleResponse response = new RuleResponse();
         response.setId(rule.getId());
         response.setSpaceId(rule.getSpace().getId());
@@ -177,7 +184,10 @@ public class RuleService {
         response.setWeekInterval(rule.getWeekInterval());
         response.setStartDate(rule.getStartDate());
         response.setEndDate(rule.getEndDate());
-
+        
+        response.setCreatedBy(rule.getCreatedBy());
+        response.setCreatedByName(user != null ? user.getUsername() : "알 수 없음");
+        
         response.setCreatedAt(rule.getCreatedAt());
         response.setUpdatedAt(rule.getUpdatedAt());
         

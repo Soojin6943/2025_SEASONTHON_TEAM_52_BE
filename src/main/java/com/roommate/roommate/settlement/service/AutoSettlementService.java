@@ -6,6 +6,8 @@ import com.roommate.roommate.settlement.entity.Expense;
 import com.roommate.roommate.settlement.entity.Settlement;
 import com.roommate.roommate.settlement.repository.ExpenseRepository;
 import com.roommate.roommate.settlement.repository.SettlementRepository;
+import com.roommate.roommate.auth.User;
+import com.roommate.roommate.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ public class AutoSettlementService {
     private final AiAnalysisService aiAnalysisService;
     private final SettlementRepository settlementRepository;
     private final ExpenseRepository expenseRepository;
+    private final UserRepository userRepository;
 
 
     // 영수증 이미지로 자동 지출 생성하는 메서드
@@ -58,6 +61,9 @@ public class AutoSettlementService {
             // 4단계: 정산 총 금액 업데이트
             updateSettlementTotalAmount(settlementId, savedExpense.getAmount());
             
+            // User 정보 조회하여 이름 설정
+            User user = userRepository.findById(userId).orElse(null);
+            
             return ExpenseResponse.builder()
                     .id(savedExpense.getId())
                     .expenseType(savedExpense.getExpenseType())
@@ -66,6 +72,7 @@ public class AutoSettlementService {
                     .itemsJson(savedExpense.getItemsJson())
                     .attachmentUrl(savedExpense.getAttachmentUrl())
                     .createdBy(savedExpense.getCreatedBy())
+                    .createdByName(user != null ? user.getUsername() : "알 수 없음")
                     .createdAt(savedExpense.getCreatedAt())
                     .build();
 
@@ -103,6 +110,9 @@ public class AutoSettlementService {
             // 4단계: 정산 총 금액 업데이트
             updateSettlementTotalAmount(settlementId, savedExpense.getAmount());
             
+            // User 정보 조회하여 이름 설정
+            User user = userRepository.findById(userId).orElse(null);
+            
             return ExpenseResponse.builder()
                     .id(savedExpense.getId())
                     .expenseType(savedExpense.getExpenseType())
@@ -111,6 +121,7 @@ public class AutoSettlementService {
                     .itemsJson(savedExpense.getItemsJson())
                     .attachmentUrl(savedExpense.getAttachmentUrl())
                     .createdBy(savedExpense.getCreatedBy())
+                    .createdByName(user != null ? user.getUsername() : "알 수 없음")
                     .createdAt(savedExpense.getCreatedAt())
                     .build();
 

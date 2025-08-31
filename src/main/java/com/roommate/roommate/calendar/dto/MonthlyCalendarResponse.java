@@ -63,5 +63,8 @@ public class MonthlyCalendarResponse {
         
         @Schema(description = "생성자 ID")
         private Long createdBy;
+        
+        @Schema(description = "작성자 이름")
+        private String createdByName;
     }
 }
