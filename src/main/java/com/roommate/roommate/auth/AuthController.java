@@ -74,7 +74,7 @@ public class AuthController {
 
     @Operation(summary = "프로필 조회")
     @GetMapping("/profile")
-    public ResponseEntity<SuccessResponse<UserProfile>> getProfile(HttpSession session) {
+    public ResponseEntity<UserProfile> getProfile(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         
         if (userId == null) {
@@ -97,12 +97,12 @@ public class AuthController {
                 user.getKakaoOpenChatLink()
         );
         
-        return SuccessResponse.onSuccess("프로필 조회에 성공했습니다.", HttpStatus.OK, profile);
+        return ResponseEntity.ok(profile);
     }
 
     @Operation(summary = "프로필 업데이트")
     @PutMapping("/profile")
-    public ResponseEntity<SuccessResponse<UserProfile>> updateProfile(
+    public ResponseEntity<UserProfile> updateProfile(
             @RequestBody @Valid UpdateProfileRequest request,
             HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -136,22 +136,7 @@ public class AuthController {
                 user.getKakaoOpenChatLink()
         );
         
-        return SuccessResponse.onSuccess("프로필 업데이트에 성공했습니다.", HttpStatus.OK, updatedProfile);
+        return ResponseEntity.ok(updatedProfile);
     }
 
-    @Operation(summary = "디버깅: 사용자 스페이스 소속 여부 확인")
-    @GetMapping("/debug/space-status")
-    public ResponseEntity<SuccessResponse<String>> debugSpaceStatus(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        
-        if (userId == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        // 직접 스페이스 소속 여부 확인
-        boolean hasSpace = authService.checkUserHasSpace(userId);
-        
-        String debugInfo = String.format("User ID: %d, Has Space: %s", userId, hasSpace);
-        return SuccessResponse.onSuccess("디버깅 정보", HttpStatus.OK, debugInfo);
-    }
 }
