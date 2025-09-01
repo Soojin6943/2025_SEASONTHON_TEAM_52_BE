@@ -1,4 +1,4 @@
-package com.roommate.roommate.Matching.enums;
+package com.roommate.roommate.matching.enums;
 
 public enum TidyLevel {
     /** 청결 수준: 엄격 / 보통 / 느슨함 */

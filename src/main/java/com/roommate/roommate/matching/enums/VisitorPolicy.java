@@ -1,4 +1,4 @@
-package com.roommate.roommate.Matching.enums;
+package com.roommate.roommate.matching.enums;
 
 public enum VisitorPolicy {
     /** 외부인 방문 허용 정도 */

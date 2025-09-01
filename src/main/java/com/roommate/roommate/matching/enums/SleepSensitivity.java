@@ -1,4 +1,4 @@
-package com.roommate.roommate.Matching.enums;
+package com.roommate.roommate.matching.enums;
 
 public enum SleepSensitivity {
     SENSITIVE, // 예민

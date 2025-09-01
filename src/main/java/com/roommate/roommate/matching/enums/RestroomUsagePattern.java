@@ -1,4 +1,4 @@
-package com.roommate.roommate.Matching.enums;
+package com.roommate.roommate.matching.enums;
 
 public enum RestroomUsagePattern {
     MORNING_SHOWER, // 아침 위주

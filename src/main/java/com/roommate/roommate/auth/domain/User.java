@@ -1,7 +1,7 @@
 package com.roommate.roommate.auth.domain;
 
-import com.roommate.roommate.Matching.domain.DesiredProfile;
-import com.roommate.roommate.Matching.domain.MyProfile;
+import com.roommate.roommate.matching.domain.DesiredProfile;
+import com.roommate.roommate.matching.domain.MyProfile;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -54,13 +54,6 @@ public class User {
     // 원하는 룸메이트 성향 프로필
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private DesiredProfile desiredProfile;
-
-    public User(String userName, int age, Gender gender, boolean isActive){
-        this.username = userName;
-        this.age = age;
-        this.gender = gender;
-        this.isActive = isActive;
-    }
 
     // 오픈 채팅 링크 수정
     public void updateKakaoOpenChatLink(String link) {
