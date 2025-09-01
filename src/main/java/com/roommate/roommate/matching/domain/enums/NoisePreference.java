@@ -1,4 +1,4 @@
-package com.roommate.roommate.matching.enums;
+package com.roommate.roommate.matching.domain.enums;
 
 public enum NoisePreference {
     ALWAYS_QUIET,  // 항상 조용

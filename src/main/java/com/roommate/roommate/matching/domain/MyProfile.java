@@ -2,9 +2,8 @@ package com.roommate.roommate.matching.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.roommate.roommate.auth.domain.User;
-import com.roommate.roommate.matching.enums.*;
+import com.roommate.roommate.matching.domain.enums.*;
 import jakarta.persistence.*;
-import lombok.Cleanup;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
