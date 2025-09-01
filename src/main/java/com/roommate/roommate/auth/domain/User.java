@@ -43,6 +43,18 @@ public class User {
     @Column
     private String kakaoOpenChatLink;
 
+    // 자기소개
+    @Column(columnDefinition = "TEXT")
+    private String introduction;
+
+    // 선호지역 (emd_cd)
+    @Column(name = "preferred_location_emd_cd", length = 10)
+    private String preferredLocationEmdCd;
+
+    // 현재 스페이스 소속 여부
+    @Column(name = "has_space", nullable = false)
+    private boolean hasSpace = false;
+
     // 생성일
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -58,5 +70,20 @@ public class User {
     // 오픈 채팅 링크 수정
     public void updateKakaoOpenChatLink(String link) {
         this.kakaoOpenChatLink = link;
+    }
+
+    // 자기소개 수정
+    public void updateIntroduction(String introduction) {
+        this.introduction = introduction;
+    }
+
+    // 선호지역 수정
+    public void updatePreferredLocation(String emdCd) {
+        this.preferredLocationEmdCd = emdCd;
+    }
+
+    // 스페이스 소속 여부 업데이트
+    public void updateHasSpace(boolean hasSpace) {
+        this.hasSpace = hasSpace;
     }
 }
