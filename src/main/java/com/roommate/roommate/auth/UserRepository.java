@@ -1,5 +1,6 @@
 package com.roommate.roommate.auth;
 
+import com.roommate.roommate.auth.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

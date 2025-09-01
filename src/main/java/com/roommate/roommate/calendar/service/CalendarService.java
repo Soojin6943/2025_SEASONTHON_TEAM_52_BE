@@ -8,7 +8,7 @@ import com.roommate.roommate.calendar.entity.SharedCalendar;
 import com.roommate.roommate.calendar.repository.SharedCalendarRepository;
 import com.roommate.roommate.space.entity.Space;
 import com.roommate.roommate.space.repository.SpaceRepository;
-import com.roommate.roommate.auth.User;
+import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
