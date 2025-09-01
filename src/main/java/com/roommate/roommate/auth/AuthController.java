@@ -3,6 +3,8 @@ package com.roommate.roommate.auth;
 import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.dto.AuthResponse;
 import com.roommate.roommate.auth.dto.LoginRequest;
+import com.roommate.roommate.auth.dto.UserProfile;
+import com.roommate.roommate.auth.dto.UpdateProfileRequest;
 import com.roommate.roommate.common.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,7 +45,20 @@ public class AuthController {
         // created 여부 확인 (회원가입 직후 5초 이내면 true)
         boolean created = user.getCreatedAt() != null && user.getCreatedAt().isAfter(LocalDateTime.now().minusSeconds(5));
 
-        AuthResponse response = new AuthResponse(user.getId(), user.getUsername(), user.getAge(), user.getGender(), created, session.getId());
+        // 스페이스 소속 여부를 실제 데이터에서 조회하여 업데이트
+        authService.updateUserSpaceStatusFromDatabase(user.getId());
+
+        AuthResponse response = new AuthResponse(
+                user.getId(), 
+                user.getUsername(), 
+                user.getAge(), 
+                user.getGender(), 
+                user.getIntroduction(),
+                user.getPreferredLocationEmdCd(),
+                user.isHasSpace(),
+                created, 
+                session.getId()
+        );
 
         return SuccessResponse.onSuccess("로그인에 성공했습니다.",HttpStatus.OK, response);
     }
@@ -55,25 +70,73 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "현재 세션 정보 확인")
-    @GetMapping("/me")
-    public ResponseEntity<AuthResponse> getCurrentUser(HttpSession session) {
+
+
+    @Operation(summary = "프로필 조회")
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfile> getProfile(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
-        String username = (String) session.getAttribute("username");
         
-        if (userId == null || username == null) {
+        if (userId == null) {
             return ResponseEntity.status(401).build();
         }
 
         User user = authService.findById(userId);
         
-        return ResponseEntity.ok(new AuthResponse(
-                userId,
-                username,
+        // 스페이스 소속 여부를 실제 데이터에서 조회하여 업데이트
+        authService.updateUserSpaceStatusFromDatabase(userId);
+        
+        UserProfile profile = new UserProfile(
+                user.getId(),
+                user.getUsername(),
                 user.getAge(),
                 user.getGender(),
-                false,
-                session.getId()
-        ));
+                user.getIntroduction(),
+                user.getPreferredLocationEmdCd(),
+                user.isHasSpace(),
+                user.getKakaoOpenChatLink()
+        );
+        
+        return ResponseEntity.ok(profile);
     }
+
+    @Operation(summary = "프로필 업데이트")
+    @PutMapping("/profile")
+    public ResponseEntity<UserProfile> updateProfile(
+            @RequestBody @Valid UpdateProfileRequest request,
+            HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        User user = authService.findById(userId);
+        
+        // 프로필 업데이트
+        if (request.introduction() != null) {
+            user.updateIntroduction(request.introduction());
+        }
+        if (request.preferredLocationEmdCd() != null) {
+            user.updatePreferredLocation(request.preferredLocationEmdCd());
+        }
+        if (request.kakaoOpenChatLink() != null) {
+            user.updateKakaoOpenChatLink(request.kakaoOpenChatLink());
+        }
+        
+        // 업데이트된 프로필 반환
+        UserProfile updatedProfile = new UserProfile(
+                user.getId(),
+                user.getUsername(),
+                user.getAge(),
+                user.getGender(),
+                user.getIntroduction(),
+                user.getPreferredLocationEmdCd(),
+                user.isHasSpace(),
+                user.getKakaoOpenChatLink()
+        );
+        
+        return ResponseEntity.ok(updatedProfile);
+    }
+
 }
