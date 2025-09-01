@@ -74,4 +74,11 @@ public class AuthService {
     }
     
 
+    // 오픈 채팅 링크 추가
+    @Transactional
+    public  void setChatLink(Long userId, String link){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
+        user.updateKakaoOpenChatLink(link);
+    }
 }
