@@ -1,12 +1,11 @@
 package com.roommate.roommate.settlement.service;
 
-import com.roommate.roommate.settlement.dto.ExpenseCreateRequest;
 import com.roommate.roommate.settlement.dto.ExpenseResponse;
 import com.roommate.roommate.settlement.entity.Expense;
 import com.roommate.roommate.settlement.entity.Settlement;
 import com.roommate.roommate.settlement.repository.ExpenseRepository;
 import com.roommate.roommate.settlement.repository.SettlementRepository;
-import com.roommate.roommate.auth.User;
+import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 

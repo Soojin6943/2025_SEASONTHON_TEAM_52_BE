@@ -6,13 +6,12 @@ import com.roommate.roommate.rule.entity.Rule;
 import com.roommate.roommate.rule.repository.RuleRepository;
 import com.roommate.roommate.space.entity.Space;
 import com.roommate.roommate.space.repository.SpaceRepository;
-import com.roommate.roommate.auth.User;
+import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;

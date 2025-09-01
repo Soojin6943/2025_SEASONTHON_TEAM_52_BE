@@ -1,5 +1,6 @@
 package com.roommate.roommate.auth;
 
+import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.dto.AuthResponse;
 import com.roommate.roommate.auth.dto.LoginRequest;
 import jakarta.servlet.http.HttpSession;
