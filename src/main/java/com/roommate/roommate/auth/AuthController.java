@@ -5,6 +5,7 @@ import com.roommate.roommate.auth.dto.AuthResponse;
 import com.roommate.roommate.auth.dto.LoginRequest;
 import com.roommate.roommate.auth.dto.UserProfile;
 import com.roommate.roommate.auth.dto.UpdateProfileRequest;
+import com.roommate.roommate.auth.dto.OpenChatLinkRequest;
 import com.roommate.roommate.common.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -139,4 +140,15 @@ public class AuthController {
         return ResponseEntity.ok(updatedProfile);
     }
 
+    // 오픈 채팅 링크 추가 : PATCH /users/me/open-chat-link
+    @PatchMapping("/me/open-chat-link")
+    public ResponseEntity<SuccessResponse<Void>> setChatLink(@SessionAttribute(name = "userId") Long userId,
+                                                             @RequestBody OpenChatLinkRequest requestDto){
+
+        authService.setChatLink(userId, requestDto.getLink());
+
+        // 데이터 없는 응답 반환
+        return SuccessResponse.ok("성공적으로 링크를 추가했습니다.");
+
+    }
 }

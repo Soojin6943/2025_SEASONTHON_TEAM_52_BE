@@ -1,4 +1,4 @@
-package com.roommate.roommate.matching.enums;
+package com.roommate.roommate.matching.domain.enums;
 
 public enum HomeStay {
     MOSTLY_OUT,  // 대부분 외출

@@ -1,4 +1,4 @@
-package com.roommate.roommate.matching.enums;
+package com.roommate.roommate.matching.domain.enums;
 
 public enum FoodOdorPolicy {
     ALLOWED, // 허용
