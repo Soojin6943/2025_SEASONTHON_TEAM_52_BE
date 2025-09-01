@@ -1,5 +1,7 @@
 package com.roommate.roommate.auth;
 
+import com.roommate.roommate.auth.domain.Gender;
+import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.dto.AuthResponse;
 import com.roommate.roommate.auth.dto.LoginRequest;
 import jakarta.servlet.http.HttpSession;
@@ -8,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -15,31 +18,43 @@ public class AuthService {
 
     private final UserRepository userRepository;
 
+    // 로그인 (없으면 회원가입)
     @Transactional
-    public AuthResponse loginOrSignUp(LoginRequest req, HttpSession session) {
+    public User loginOrSignUp(LoginRequest req) {
         return userRepository.findByUsername(req.username())
-                .map(u -> {
-                    // 세션에 사용자 정보 저장 (회원가입 X)
-                    session.setAttribute("userId", u.getId());
-                    session.setAttribute("username", u.getUsername());
-                    return new AuthResponse(u.getId(), u.getUsername(), false, session.getId());
-                })
-                .orElseGet(() -> {
-                    // 계정없으면 회원가입
-                    User created = User.builder()
-                            .username(req.username())
-                            .createdAt(LocalDateTime.now())
-                            .build();
-                    userRepository.save(created);
-                    
-                    // 세션에 사용자 정보 저장
-                    session.setAttribute("userId", created.getId());
-                    session.setAttribute("username", created.getUsername());
-                    return new AuthResponse(created.getId(), created.getUsername(), true, session.getId());
-                });
+                .orElseGet(() -> createNewUser(req.username()));
+    }
+
+    // 처음 로그인 시 자동 회원가입
+    private User createNewUser(String name){
+
+        // 랜덤 나이 값
+        Random random = new Random();
+        int randomAge = (random.nextInt(15)+20);
+
+        // 랜덤 성별
+        Gender randomGender = random.nextBoolean() ? Gender.MALE : Gender.FEMALE;
+
+        // 첫 로그인 한 다음에는 비활성화 (아직 공고를 올리지 않았기 때문)
+        boolean isActive = false;
+
+        User newUser = User.builder()
+                .username(name)
+                .age(randomAge)
+                .gender(randomGender)
+                .isActive(isActive)
+                .createdAt(LocalDateTime.now())
+                .build();
+        return userRepository.save(newUser);
     }
 
     public void logout(HttpSession session) {
         session.invalidate();
+    }
+
+    @Transactional
+    public User findById(Long userId){
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
     }
 }

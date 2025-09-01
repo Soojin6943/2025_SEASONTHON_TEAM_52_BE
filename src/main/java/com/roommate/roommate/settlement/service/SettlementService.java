@@ -11,7 +11,7 @@ import com.roommate.roommate.settlement.entity.Expense;
 import com.roommate.roommate.settlement.entity.Settlement;
 import com.roommate.roommate.settlement.repository.ExpenseRepository;
 import com.roommate.roommate.settlement.repository.SettlementRepository;
-import com.roommate.roommate.auth.User;
+import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.UserRepository;
 import com.roommate.roommate.space.entity.SpaceMember;
 import com.roommate.roommate.space.repository.SpaceMemberRepository;
