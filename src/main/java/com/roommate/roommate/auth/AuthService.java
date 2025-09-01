@@ -4,6 +4,7 @@ import com.roommate.roommate.auth.domain.Gender;
 import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.dto.AuthResponse;
 import com.roommate.roommate.auth.dto.LoginRequest;
+import com.roommate.roommate.space.repository.SpaceMemberRepository;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.Random;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final SpaceMemberRepository spaceMemberRepository;
 
     // 로그인 (없으면 회원가입)
     @Transactional
@@ -43,6 +45,7 @@ public class AuthService {
                 .age(randomAge)
                 .gender(randomGender)
                 .isActive(isActive)
+                .hasSpace(false) // 기본적으로 스페이스에 소속되지 않음
                 .createdAt(LocalDateTime.now())
                 .build();
         return userRepository.save(newUser);
@@ -56,5 +59,22 @@ public class AuthService {
     public User findById(Long userId){
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+    }
+
+    // 사용자의 스페이스 소속 여부를 실제 데이터에서 조회하여 업데이트
+    @Transactional
+    public void updateUserSpaceStatusFromDatabase(Long userId) {
+        User user = findById(userId);
+        // 더 명확한 쿼리 사용
+        boolean hasSpace = spaceMemberRepository.userExistsInAnySpace(userId);
+        user.updateHasSpace(hasSpace);
+        
+        // 디버깅을 위한 로그 (나중에 제거 가능)
+        System.out.println("User " + userId + " hasSpace: " + hasSpace);
+    }
+    
+    // 사용자의 스페이스 소속 여부를 조회 (디버깅용)
+    public boolean checkUserHasSpace(Long userId) {
+        return spaceMemberRepository.userExistsInAnySpace(userId);
     }
 }

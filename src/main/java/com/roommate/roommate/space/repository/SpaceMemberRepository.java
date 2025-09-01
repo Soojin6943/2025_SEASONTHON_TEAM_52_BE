@@ -19,4 +19,11 @@ public interface SpaceMemberRepository extends JpaRepository<SpaceMember, Long> 
     Optional<SpaceMember> findBySpaceIdAndUserId(Long spaceId, Long userId);
     boolean existsBySpaceIdAndUserId(Long spaceId, Long userId);
     long countBySpaceId(Long spaceId);
+    
+    // 사용자가 스페이스에 속해있는지 확인
+    boolean existsByUserId(Long userId);
+    
+    // 디버깅을 위한 명시적 쿼리
+    @Query("SELECT COUNT(sm) > 0 FROM SpaceMember sm WHERE sm.userId = :userId")
+    boolean userExistsInAnySpace(Long userId);
 }
