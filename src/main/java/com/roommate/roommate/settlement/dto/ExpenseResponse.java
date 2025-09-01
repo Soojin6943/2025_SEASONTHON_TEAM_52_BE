@@ -41,6 +41,9 @@ public class ExpenseResponse {
     @Schema(description = "작성자 ID", example = "1")
     private Long createdBy;
     
+    @Schema(description = "작성자 이름", example = "두둥탁")
+    private String createdByName;
+    
     @Schema(description = "생성 날짜")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;

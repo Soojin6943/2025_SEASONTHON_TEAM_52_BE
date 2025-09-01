@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @RestController
@@ -23,7 +24,8 @@ public class RuleController {
     @Operation(summary = "규칙 생성", description = "새로운 반복 규칙을 생성합니다.")
     public ResponseEntity<RuleResponse> createRule(
             @PathVariable Long spaceId,
-            @RequestBody RuleCreateRequest request) {
+            @RequestBody RuleCreateRequest request,
+            HttpSession session) {
         if (spaceId == null || spaceId <= 0) {
             throw new RuntimeException("유효하지 않은 스페이스 ID입니다.");
         }
@@ -31,7 +33,13 @@ public class RuleController {
             throw new RuntimeException("요청 데이터가 없습니다.");
         }
         
-        RuleResponse response = ruleService.createRule(spaceId, request);
+        // 세션에서 userId 가져오기
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        RuleResponse response = ruleService.createRule(spaceId, request, userId);
         return ResponseEntity.ok(response);
     }
     

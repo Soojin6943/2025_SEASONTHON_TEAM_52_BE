@@ -45,7 +45,8 @@ public class Rule {
     @Column
     private LocalDate endDate; // 종료 날짜 (null이면 무제한)
     
-
+    @Column(nullable = false)
+    private Long createdBy; // 작성자 ID
     
     @Column(nullable = false)
     private LocalDate createdAt;
