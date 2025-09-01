@@ -73,8 +73,5 @@ public class AuthService {
         System.out.println("User " + userId + " hasSpace: " + hasSpace);
     }
     
-    // 사용자의 스페이스 소속 여부를 조회 (디버깅용)
-    public boolean checkUserHasSpace(Long userId) {
-        return spaceMemberRepository.userExistsInAnySpace(userId);
-    }
+
 }
