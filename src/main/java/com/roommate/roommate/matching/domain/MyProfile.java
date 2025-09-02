@@ -3,6 +3,7 @@ package com.roommate.roommate.matching.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.matching.domain.enums.*;
+import com.roommate.roommate.matching.dto.ProfileDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -74,5 +75,19 @@ public class MyProfile {
     private SleepSensitivity sleepSensitivity;
 
     public void setUser(User user) {this.user = user;}
+
+    // 성향 프로필 업데이트
+    public void updateMyProfile(ProfileDto dto){
+        this.lifeCycle = dto.getLifeCycle();
+        this.smoking = dto.getSmoking();
+        this.cleanFreq = dto.getCleanFreq();
+        this.tidyLevel = dto.getTidyLevel();
+        this.visitorPolicy = dto.getVisitorPolicy();
+        this.restroomUsagePattern = dto.getRestroomUsagePattern();
+        this.foodOdorPolicy = dto.getFoodOdorPolicy();
+        this.homeStay = dto.getHomeStay();
+        this.noisePreference = dto.getNoisePreference();
+        this.sleepSensitivity = dto.getSleepSensitivity();
+    }
 
 }
