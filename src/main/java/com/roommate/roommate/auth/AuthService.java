@@ -4,12 +4,15 @@ import com.roommate.roommate.auth.domain.Gender;
 import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.dto.AuthResponse;
 import com.roommate.roommate.auth.dto.LoginRequest;
+import com.roommate.roommate.common.s3.S3Uploader;
 import com.roommate.roommate.space.repository.SpaceMemberRepository;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Random;
 
@@ -19,6 +22,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final SpaceMemberRepository spaceMemberRepository;
+    private final S3Uploader s3Uploader;
 
     // 로그인 (없으면 회원가입)
     @Transactional
@@ -80,5 +84,28 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
         user.updateKakaoOpenChatLink(link);
+    }
+
+    // 유저 프로필 사진 추가
+    // 기존 이미지가 있다면 S3에서 삭제
+    @Transactional
+    public String updateProfileImage(Long userId, MultipartFile imageFile) throws IOException {
+        // 사용자 정보 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 아이디를 찾을 수 없습니다"));
+
+        // 기존 프로필 이미지가 있다면 S3에서 삭제
+        String oldImageUrl = user.getProfileImageUrl();
+        if(oldImageUrl != null) {
+            s3Uploader.delete(oldImageUrl);
+        }
+
+        // 새 이미지 s3 업로드 후 url 받음
+        String newImageUrl = s3Uploader.upload(imageFile);
+
+        // 사용자 정보에 새 이미지 url 업로드
+        user.updateProfileImage(newImageUrl);
+
+        return newImageUrl;
     }
 }
