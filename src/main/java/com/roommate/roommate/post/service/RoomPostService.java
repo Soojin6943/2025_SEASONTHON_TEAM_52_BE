@@ -4,6 +4,7 @@ import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.UserRepository;
 import com.roommate.roommate.common.s3.S3Uploader;
 import com.roommate.roommate.post.dto.RoomCreateRequestDto;
+import com.roommate.roommate.post.dto.RoomPostDto;
 import com.roommate.roommate.post.entity.RoomPost;
 import com.roommate.roommate.post.entity.RoommatePost;
 import com.roommate.roommate.post.repository.RoomPostRepository;
@@ -58,4 +59,30 @@ public class RoomPostService {
         return roomPost.getRoomPostId();
     }
 
+    public RoomPostDto.RoomResponseDto getRoommatePost(Long roomPostId) {
+        RoomPost roomPost = roomPostRepository.findById(roomPostId)
+                .orElseThrow();
+
+        RoomPostDto.RoomResponseDto result = RoomPostDto.RoomResponseDto.builder()
+                .roomPostId(roomPost.getRoomPostId())
+                .userId(roomPost.getUser().getId())
+                .username(roomPost.getUser().getUsername())
+                .title(roomPost.getTitle())
+                .latitude(roomPost.getLatitude())
+                .longitude(roomPost.getLongitude())
+                .deposit(roomPost.getDeposit())
+                .monthlyRent(roomPost.getMonthlyRent())
+                .managementFee(roomPost.getManagementFee())
+                .houseType(roomPost.getHouseType())
+                .size(roomPost.getSize())
+                .moveInDate(roomPost.getMoveInDate())
+                .minStayPeriod(roomPost.getMinStayPeriod())
+                .content(roomPost.getContent())
+                .photo(roomPost.getPhoto())
+                .area(roomPost.getArea())
+                .date(roomPost.getCreatedAt().toLocalDate())
+                .build();
+
+        return result;
+    }
 }

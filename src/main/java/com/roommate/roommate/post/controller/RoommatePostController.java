@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -35,6 +32,14 @@ public class RoommatePostController {
         RoommatePostDto.RoommateCreateResponseDto dto = new RoommatePostDto.RoommateCreateResponseDto();
         dto.setRoommatePostId(roommatePostId);
         return SuccessResponse.onSuccess("모집글이 성공적으로 저장되었습니다.", HttpStatus.CREATED, dto);
+    }
+
+    @GetMapping("/{roommatePostId}")
+    public ResponseEntity<SuccessResponse<RoommatePostDto.RoommateResponseDto>> getRoommatePost(
+            HttpSession session,
+            @PathVariable(value = "roommatePostId") Long roommatePostId){
+        RoommatePostDto.RoommateResponseDto dto = roommatePostService.getRoommatePost(roommatePostId);
+        return SuccessResponse.onSuccess("모집글을 성공적으로 조회했습니다.", HttpStatus.OK, dto);
     }
 }
 
