@@ -61,6 +61,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Mbti mbti;
 
+    // 사용자 프로필 이미지
+    @Column
+    private String profileImageUrl;
+
     // 생성일
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -96,5 +100,10 @@ public class User {
     // mbti 수정
     public void updateMbti(Mbti mbti) {
         this.mbti = mbti;
+    }
+
+    // 사용자 프로필 이미지 업로드
+    public void updateProfileImage(String profileImageUrl){
+        this.profileImageUrl = profileImageUrl;
     }
 }
