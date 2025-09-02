@@ -16,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Tag(name = "Auth")
@@ -151,4 +153,26 @@ public class AuthController {
         return SuccessResponse.ok("성공적으로 링크를 추가했습니다.");
 
     }
+
+    @Operation(summary = "사용자 프로필 이미지 등록")
+    @PostMapping("/images")
+    public ResponseEntity<SuccessResponse<String>> upload(@SessionAttribute("userId") Long userId, @RequestParam("image") MultipartFile imageFile){
+        try {
+            // 이미지 비었는지 확인
+            if (imageFile.isEmpty()) {
+                // TODO 예외 처리
+            }
+
+            String imageUrl = authService.updateProfileImage(userId, imageFile);
+
+            return SuccessResponse.onSuccess("프로필 이미지를 성공적으로 변경했습니다",
+                    HttpStatus.OK,
+                    imageUrl
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 업로드에 실패했습니다.", e);
+        }
+    }
+
+
 }
