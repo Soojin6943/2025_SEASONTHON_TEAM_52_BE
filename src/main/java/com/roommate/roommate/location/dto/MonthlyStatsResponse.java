@@ -10,6 +10,9 @@ public record MonthlyStatsResponse(
         @Schema(description = "지역명", example = "영등포구")
         String regionName,
         
+        @Schema(description = "주택 유형", example = "APARTMENT")
+        String type,
+        
         @Schema(description = "수집 월", example = "202408")
         String collectMonth,
         
@@ -18,6 +21,12 @@ public record MonthlyStatsResponse(
         
         @Schema(description = "청년 계약 수", example = "800")
         Integer youthContracts,
+        
+        @Schema(description = "청년 계약 수 (정제)", example = "750")
+        Integer youthContractsClean,
+        
+        @Schema(description = "평균 월세", example = "780000")
+        Integer avgMonthlyRent,
         
         @Schema(description = "청년 중앙값 월세", example = "750000")
         Integer youthMedianMonthlyRent,
