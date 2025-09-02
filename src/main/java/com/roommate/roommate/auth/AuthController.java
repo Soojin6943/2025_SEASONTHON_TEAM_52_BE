@@ -151,4 +151,9 @@ public class AuthController {
         return SuccessResponse.ok("성공적으로 링크를 추가했습니다.");
 
     }
+
+//    @Operation(summary = "사용자 프로필 이미지 등록")
+//    @PostMapping("/images")
+
+
 }
