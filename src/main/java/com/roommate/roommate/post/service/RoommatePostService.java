@@ -4,10 +4,13 @@ import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.UserRepository;
 import com.roommate.roommate.common.s3.S3Uploader;
 import com.roommate.roommate.post.dto.RoommateCreateRequestDto;
+import com.roommate.roommate.post.dto.RoommatePostDto;
 import com.roommate.roommate.post.entity.RoomPost;
 import com.roommate.roommate.post.entity.RoommatePost;
 import com.roommate.roommate.post.repository.RoomPostRepository;
 import com.roommate.roommate.post.repository.RoommatePostRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -57,5 +60,30 @@ public class RoommatePostService {
 
         roommatePostRepository.save(roommatePost);
         return roommatePost.getRoommatePostId();
+    }
+
+    public RoommatePostDto.RoommateResponseDto getRoommatePost(Long roommatePostId) {
+        RoommatePost roommatePost = roommatePostRepository.findById(roommatePostId)
+                .orElseThrow();
+
+        RoommatePostDto.RoommateResponseDto result = RoommatePostDto.RoommateResponseDto.builder()
+                .roommatePostId(roommatePostId)
+                .userId(roommatePost.getUser().getId())
+                .username(roommatePost.getUser().getUsername())
+                .title(roommatePost.getTitle())
+                .latitude(roommatePost.getLatitude())
+                .longitude(roommatePost.getLongitude())
+                .deposit(roommatePost.getDeposit())
+                .monthlyRent(roommatePost.getMonthlyRent())
+                .houseType(roommatePost.getHouseType())
+                .moveInDate(roommatePost.getMoveInDate())
+                .minStayPeriod(roommatePost.getMinStayPeriod())
+                .content(roommatePost.getContent())
+                .photo(roommatePost.getPhoto())
+                .area(roommatePost.getArea())
+                .date(roommatePost.getCreatedAt().toLocalDate())
+                .build();
+
+        return result;
     }
 }
