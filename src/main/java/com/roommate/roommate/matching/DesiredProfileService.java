@@ -33,4 +33,14 @@ public class DesiredProfileService {
 
         return desiredProfileRepository.save(desiredProfile);
     }
+
+    // 이상형 프로필 수정
+    public DesiredProfile update(Long userId, DesiredProfileDto dto){
+        DesiredProfile desiredProfile = desiredProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("이상형 프로필이 존재하지 않습니다."));
+
+        desiredProfile.updateDesiredProfile(dto);
+
+        return desiredProfileRepository.save(desiredProfile);
+    }
 }

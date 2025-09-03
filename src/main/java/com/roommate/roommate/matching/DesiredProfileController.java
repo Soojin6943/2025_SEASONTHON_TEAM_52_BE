@@ -27,4 +27,15 @@ public class DesiredProfileController {
 
         return SuccessResponse.onSuccess("이상형 프로필이 생성되었습니다.", HttpStatus.CREATED, profile);
     }
+
+    // 프로필 수정
+    @Operation(summary = "이상형 프로필 수정")
+    @PatchMapping
+    public ResponseEntity<SuccessResponse<DesiredProfile>> update(@SessionAttribute("userId") Long userId, @RequestBody DesiredProfileDto dto){
+
+        // 생성
+        DesiredProfile profile = desiredProfileService.update(userId, dto);
+
+        return SuccessResponse.onSuccess("이상형 프로필이 생성되었습니다.", HttpStatus.OK, profile);
+    }
 }
