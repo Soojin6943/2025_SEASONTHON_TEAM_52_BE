@@ -4,6 +4,8 @@ import com.roommate.roommate.common.SuccessResponse;
 import com.roommate.roommate.post.dto.RoomCreateRequestDto;
 import com.roommate.roommate.post.dto.RoomPostDto;
 import com.roommate.roommate.post.dto.RoommateCreateRequestDto;
+import com.roommate.roommate.post.entity.HouseType;
+import com.roommate.roommate.post.entity.MoveInDate;
 import com.roommate.roommate.post.service.RoomPostService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -36,7 +38,20 @@ public class RoomPostController {
 
     @GetMapping("/{roomPostId}")
     public ResponseEntity<SuccessResponse<RoomPostDto.RoomResponseDto>> getRoomPost(@PathVariable Long roomPostId) {
-        RoomPostDto.RoomResponseDto dto = roomPostService.getRoommatePost(roomPostId);
+        RoomPostDto.RoomResponseDto dto = roomPostService.getRoomPost(roomPostId);
         return SuccessResponse.onSuccess("모집글을 성공적으로 조회했습니다.", HttpStatus.OK, dto);
+    }
+
+    @GetMapping
+    public ResponseEntity<SuccessResponse<RoomPostDto.RoomList>> getRoomPosts(
+            @RequestParam(required = false) Integer depositMin,
+            @RequestParam(required = false) Integer depositMax,
+            @RequestParam(required = false) Integer rentMin,
+            @RequestParam(required = false) Integer rentMax,
+            @RequestParam(required = false) String houseType,
+            @RequestParam(required = false) MoveInDate moveInDate,
+            @RequestParam(required = false) Integer minStay) {
+        RoomPostDto.RoomList dto = roomPostService.getRoomPosts(depositMin, depositMax, rentMin, rentMax, houseType, moveInDate, minStay);
+        return SuccessResponse.onSuccess("모집글들을 성공적으로 조회했습니다.", HttpStatus.OK, dto);
     }
 }
