@@ -3,6 +3,7 @@ package com.roommate.roommate.matching.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.roommate.roommate.matching.domain.enums.*;
 import com.roommate.roommate.auth.domain.User;
+import com.roommate.roommate.matching.dto.DesiredProfileDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -134,5 +135,39 @@ public class DesiredProfile {
 
     public void setUser(User user){
         this.user = user;
+    }
+
+    // 이상형 수정
+    public void updateDesiredProfile(DesiredProfileDto dto){
+        this.lifeCycleValue = dto.getLifeCycleValue();
+        this.lifeCycleRequired = dto.isLifeCycleRequired();
+
+        this.smokingValue = dto.getSmokingValue();
+        this.smokingRequired = dto.isSmokingRequired();
+
+        this.cleanFreqValue = dto.getCleanFreqValue();
+        this.cleanFreqRequired = dto.isCleanFreqRequired();
+
+        this.tidyLevelValue = dto.getTidyLevelValue();
+        this.tidyLevelRequired = dto.isTidyLevelRequired();
+
+        this.visitorPolicyValue = dto.getVisitorPolicyValue();
+        this.visitorPolicyRequired = dto.isVisitorPolicyRequired();
+
+        this.restroomUsagePatternValue = dto.getRestroomUsagePatternValue();
+        this.restroomUsagePatternRequired = dto.isRestroomUsagePatternRequired();
+
+        this.foodOdorPolicyValue = dto.getFoodOdorPolicyValue();
+        this.foodOdorPolicyRequired = dto.isFoodOdorPolicyRequired();
+
+        this.homeStayValue = dto.getHomeStayValue();
+        this.homStayRequired = dto.isHomeStayRequired();
+
+        this.noisePreferenceValue = dto.getNoisePreferenceValue();
+        this.noisePreferenceRequired = dto.isNoisePreferenceRequired();
+
+        this.sleepSensitivityValue = dto.getSleepSensitivityValue();
+        this.sleepSensitivityRequired = dto.isSleepSensitivityRequired();
+
     }
 }
