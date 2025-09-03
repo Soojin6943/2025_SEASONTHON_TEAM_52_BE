@@ -7,6 +7,7 @@ import com.roommate.roommate.auth.dto.UserProfile;
 import com.roommate.roommate.auth.dto.UpdateProfileRequest;
 import com.roommate.roommate.auth.dto.OpenChatLinkRequest;
 import com.roommate.roommate.common.SuccessResponse;
+import com.roommate.roommate.matching.dto.ProfileDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -143,6 +144,7 @@ public class AuthController {
     }
 
     // 오픈 채팅 링크 추가 : PATCH /users/me/open-chat-link
+    @Operation(summary = "오픈 채팅 링크 추가")
     @PatchMapping("/me/open-chat-link")
     public ResponseEntity<SuccessResponse<Void>> setChatLink(@SessionAttribute(name = "userId") Long userId,
                                                              @RequestBody OpenChatLinkRequest requestDto){
@@ -172,6 +174,15 @@ public class AuthController {
         } catch (IOException e) {
             throw new RuntimeException("이미지 업로드에 실패했습니다.", e);
         }
+    }
+
+    @Operation(summary = "사용자 성향 수정")
+    @PatchMapping("/my-profile")
+    public ResponseEntity<SuccessResponse<Void>> updateMyProfile(@SessionAttribute("userId") Long userId, @RequestBody ProfileDto profileDto){
+
+        authService.updateMyProfile(userId, profileDto);
+
+        return SuccessResponse.ok("성공적으로 사용자 성향을 수정했습니다.");
     }
 
 

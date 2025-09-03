@@ -5,6 +5,9 @@ import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.dto.AuthResponse;
 import com.roommate.roommate.auth.dto.LoginRequest;
 import com.roommate.roommate.common.s3.S3Uploader;
+import com.roommate.roommate.matching.domain.MyProfile;
+import com.roommate.roommate.matching.dto.ProfileDto;
+import com.roommate.roommate.matching.repository.MyProfileRepository;
 import com.roommate.roommate.space.repository.SpaceMemberRepository;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
@@ -23,6 +26,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final SpaceMemberRepository spaceMemberRepository;
     private final S3Uploader s3Uploader;
+    private final MyProfileRepository myProfileRepository;
 
     // 로그인 (없으면 회원가입)
     @Transactional
@@ -107,5 +111,14 @@ public class AuthService {
         user.updateProfileImage(newImageUrl);
 
         return newImageUrl;
+    }
+
+    // 내 성향 프로필 수정
+    @Transactional
+    public void updateMyProfile(Long userId, ProfileDto profileDto){
+        MyProfile myProfile = myProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("MyProfile이 존재하지 않습니다."));
+
+        myProfile.updateMyProfile(profileDto);
     }
 }
