@@ -4,6 +4,8 @@ import com.roommate.roommate.matching.domain.DesiredProfile;
 import com.roommate.roommate.matching.domain.MyProfile;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -70,5 +72,28 @@ public class MatchingService {
             return 1.0;
         }
         return desiredValue.equals(actualValue) ? 1.0 : 0.0;
+    }
+
+    // 일치하는 옵션
+    public List<String> getMatchedOptions(DesiredProfile desired, MyProfile target) {
+        List<String> matched = new ArrayList<>();
+
+        if (isMatch(desired.getLifeCycleValue(), target.getLifeCycle())) matched.add("life_cycle:" + target.getLifeCycle());
+        if (isMatch(desired.getSmokingValue(), target.getSmoking())) matched.add("smoking:" + target.getSmoking());
+        if (isMatch(desired.getCleanFreqValue(), target.getCleanFreq())) matched.add("clean_freq:" + target.getCleanFreq());
+        if (isMatch(desired.getTidyLevelValue(), target.getTidyLevel())) matched.add("tidy_level:" + target.getTidyLevel());
+        if (isMatch(desired.getVisitorPolicyValue(), target.getVisitorPolicy())) matched.add("visitor_policy:" + target.getVisitorPolicy());
+        if (isMatch(desired.getRestroomUsagePatternValue(), target.getRestroomUsagePattern())) matched.add("restroom_usage_pattern:" + target.getRestroomUsagePattern());
+        if (isMatch(desired.getFoodOdorPolicyValue(), target.getFoodOdorPolicy())) matched.add("food_odor_policy:" + target.getFoodOdorPolicy());
+        if (isMatch(desired.getHomeStayValue(), target.getHomeStay())) matched.add("home_stay:" + target.getHomeStay());
+        if (isMatch(desired.getNoisePreferenceValue(), target.getNoisePreference())) matched.add("noise_preference:" + target.getNoisePreference());
+        if (isMatch(desired.getSleepSensitivityValue(), target.getSleepSensitivity())) matched.add("sleep_sensitivity:" + target.getSleepSensitivity());
+
+        return matched;
+    }
+
+    private <T> boolean isMatch(T desiredValue, T actualValue) {
+        if (desiredValue == null) return false; // 무관이면 매칭 포인트 X
+        return desiredValue.equals(actualValue);
     }
 }

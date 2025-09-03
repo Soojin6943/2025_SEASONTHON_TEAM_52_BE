@@ -44,7 +44,6 @@ public class RecommendationService {
 
         List<RecommendationDto> results = new ArrayList<>();
 
-        // TODO 이거 양방향으로 확인할지 의논
         for (User userB : candidates){
             // 3. 2차 필터링: 필수조건 미충족 → 탈락 (양방향 체크)
             boolean isBGoodForA = matchingService.checkRequiredOptions(userA.getDesiredProfile(), userB.getMyProfile());
@@ -61,7 +60,16 @@ public class RecommendationService {
             double scoreAtoB = matchingService.calculateMatchScore(userA.getDesiredProfile(), userB.getMyProfile());
             double scoreBtoA = matchingService.calculateMatchScore(userB.getDesiredProfile(), userA.getMyProfile());
 
-            results.add(new RecommendationDto(userB, scoreAtoB, scoreBtoA));
+            // 5. 일치하는 옵션 반환 (양방향 일치하는 옵션만, 무관은 제외)
+            List<String> matchesFromA = matchingService.getMatchedOptions(userA.getDesiredProfile(), userB.getMyProfile());
+            List<String> matchesFromB = matchingService.getMatchedOptions(userB.getDesiredProfile(), userA.getMyProfile());
+
+            List<String> commonMatches = matchesFromA.stream()
+                    .filter(matchesFromB::contains)
+                    .toList();
+
+            results.add(new RecommendationDto(userB, scoreAtoB, scoreBtoA, commonMatches));
+
         }
 
         // 5. 내림차순 정렬
