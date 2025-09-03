@@ -1,10 +1,13 @@
 package com.roommate.roommate.post.dto;
 
+import com.roommate.roommate.auth.domain.Gender;
+import com.roommate.roommate.matching.domain.enums.Mbti;
 import com.roommate.roommate.post.entity.HouseType;
 import com.roommate.roommate.post.entity.MoveInDate;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -26,6 +29,9 @@ public class RoomPostDto {
         private Long roomPostId;
         private Long userId;
         private String username;
+        private Integer age;
+        private Gender gender;
+        private Mbti mbti;
         private String title;
         private Double latitude;
         private Double longitude;
@@ -40,5 +46,11 @@ public class RoomPostDto {
         private String photo;
         private String area;
         private LocalDate date;
+    }
+
+    @Getter
+    @Setter
+    public static class RoomList {
+        private List<RoomListDto> posts;
     }
 }

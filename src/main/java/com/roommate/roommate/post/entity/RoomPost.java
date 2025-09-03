@@ -1,5 +1,6 @@
 package com.roommate.roommate.post.entity;
 
+import com.roommate.roommate.auth.domain.Gender;
 import com.roommate.roommate.auth.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -61,6 +62,21 @@ public class RoomPost {
 
     @Column(nullable = false)
     private String area;
+
+    @Column(nullable = true)
+    private String gu_name;
+
+    @Column(nullable = true)
+    private String dong_name;
+
+    @Column(nullable = true)
+    private String bjcd;
+
+    @Column(nullable = true)
+    private String cmd_cd;
+
+    @Column(nullable = false)
+    private Gender gender;
 
     @Column(nullable = false)
     private boolean isRecruiting = true;
