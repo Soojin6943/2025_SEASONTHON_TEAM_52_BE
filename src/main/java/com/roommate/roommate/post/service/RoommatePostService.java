@@ -4,7 +4,10 @@ import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.UserRepository;
 import com.roommate.roommate.common.s3.S3Uploader;
 import com.roommate.roommate.post.dto.RoommateCreateRequestDto;
+import com.roommate.roommate.post.dto.RoommateListDto;
 import com.roommate.roommate.post.dto.RoommatePostDto;
+import com.roommate.roommate.post.entity.HouseType;
+import com.roommate.roommate.post.entity.MoveInDate;
 import com.roommate.roommate.post.entity.RoomPost;
 import com.roommate.roommate.post.entity.RoommatePost;
 import com.roommate.roommate.post.repository.RoomPostRepository;
@@ -17,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +35,7 @@ public class RoommatePostService {
 
     public Long createRoommatePost(MultipartFile photo, RoommateCreateRequestDto requestDto, Long userId) throws IOException {
         User user = userRepository.findById(userId)
-                .orElse(null);
-
+                .orElseThrow();
 
         if (roommatePostRepository.existsByUser_IdAndIsRecruitingTrue(userId) || roomPostRepository.existsByUser_IdAndIsRecruitingTrue(userId)){
             throw new IllegalAccessError("이미 모집글을 작성하셨습니다.");
@@ -42,6 +46,13 @@ public class RoommatePostService {
             photoUrl = s3Uploader.upload(photo);
         }
 
+        Set<HouseType> types = null;
+        if (requestDto.getHouseTypes() != null && !requestDto.getHouseTypes().isEmpty()) {
+            types = requestDto.getHouseTypes().stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+
         RoommatePost roommatePost = RoommatePost.builder()
                 .user(user)
                 .title(requestDto.getTitle())
@@ -49,12 +60,13 @@ public class RoommatePostService {
                 .longitude(requestDto.getLongitude())
                 .deposit(requestDto.getDeposit())
                 .monthlyRent(requestDto.getMonthlyRent())
-                .houseType(requestDto.getHouseType())
+                .houseTypes(types)
                 .moveInDate(requestDto.getMoveInDate())
                 .minStayPeriod(requestDto.getMinStayPeriod())
                 .content(requestDto.getContent())
                 .photo(photoUrl)
                 .area(requestDto.getArea())
+                .gender(user.getGender())
                 .isRecruiting(true)
                 .build();
 
@@ -66,16 +78,23 @@ public class RoommatePostService {
         RoommatePost roommatePost = roommatePostRepository.findById(roommatePostId)
                 .orElseThrow();
 
+        List<HouseType> types = roommatePost.getHouseTypes()
+                .stream()
+                .toList();
+
         RoommatePostDto.RoommateResponseDto result = RoommatePostDto.RoommateResponseDto.builder()
                 .roommatePostId(roommatePostId)
                 .userId(roommatePost.getUser().getId())
                 .username(roommatePost.getUser().getUsername())
+                .age(roommatePost.getUser().getAge())
+                .gender(roommatePost.getUser().getGender())
+                .mbti(roommatePost.getUser().getMbti())
                 .title(roommatePost.getTitle())
                 .latitude(roommatePost.getLatitude())
                 .longitude(roommatePost.getLongitude())
                 .deposit(roommatePost.getDeposit())
                 .monthlyRent(roommatePost.getMonthlyRent())
-                .houseType(roommatePost.getHouseType())
+                .houseTypes(types)
                 .moveInDate(roommatePost.getMoveInDate())
                 .minStayPeriod(roommatePost.getMinStayPeriod())
                 .content(roommatePost.getContent())
@@ -84,6 +103,39 @@ public class RoommatePostService {
                 .date(roommatePost.getCreatedAt().toLocalDate())
                 .build();
 
+        return result;
+    }
+
+    public RoommatePostDto.RoommateList getRoommatePosts(
+            Integer depositMin, Integer depositMax, Integer rentMin, Integer rentMax, String houseType, MoveInDate moveInDate, Integer minStayPeriod) {
+        List<HouseType> houseTypeList;
+        if (houseType != null) {
+            houseTypeList = Arrays.stream(houseType.split(","))
+                    .map(HouseType::valueOf)
+                    .toList();
+        } else {
+            houseTypeList = null;
+        }
+
+        List<RoommatePost> roommatePosts = roommatePostRepository.filterPosts(depositMin, depositMax, rentMin, rentMax, houseTypeList, moveInDate, minStayPeriod);
+
+        List<RoommateListDto> list = new ArrayList<>();
+        for (RoommatePost roommatePost : roommatePosts) {
+            RoommateListDto listDto = RoommateListDto.builder()
+                    .roommatePostId(roommatePost.getRoommatePostId())
+                    .userId(roommatePost.getUser().getId())
+                    .username(roommatePost.getUser().getUsername())
+                    .userProfile(roommatePost.getUser().getProfileImageUrl())
+                    .age(roommatePost.getUser().getAge())
+                    .title(roommatePost.getTitle())
+                    .deposit(roommatePost.getDeposit())
+                    .monthlyRent(roommatePost.getMonthlyRent())
+                    .build();
+            list.add(listDto);
+        }
+
+        RoommatePostDto.RoommateList result = new RoommatePostDto.RoommateList();
+        result.setPosts(list);
         return result;
     }
 }
