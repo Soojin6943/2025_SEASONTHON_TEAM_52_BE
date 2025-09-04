@@ -1,11 +1,7 @@
 package com.roommate.roommate.auth;
 
 import com.roommate.roommate.auth.domain.User;
-import com.roommate.roommate.auth.dto.AuthResponse;
-import com.roommate.roommate.auth.dto.LoginRequest;
-import com.roommate.roommate.auth.dto.UserProfile;
-import com.roommate.roommate.auth.dto.UpdateProfileRequest;
-import com.roommate.roommate.auth.dto.OpenChatLinkRequest;
+import com.roommate.roommate.auth.dto.*;
 import com.roommate.roommate.common.SuccessResponse;
 import com.roommate.roommate.matching.dto.ProfileDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -185,5 +181,14 @@ public class AuthController {
         return SuccessResponse.ok("성공적으로 사용자 성향을 수정했습니다.");
     }
 
+    @Operation(summary = "유저 프로필 조회")
+    @GetMapping("/profiles/{userId}")
+    public ResponseEntity<SuccessResponse<DetailProfileDto>> getProfile(
+            @PathVariable Long userId
+    ) {
+        DetailProfileDto detailProfileDto = authService.getUserProfile(userId);
+
+        return SuccessResponse.onSuccess("프로필 조회에 성공했습니다.", HttpStatus.OK, detailProfileDto);
+    }
 
 }
