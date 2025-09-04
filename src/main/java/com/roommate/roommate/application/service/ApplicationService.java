@@ -6,6 +6,7 @@ import com.roommate.roommate.application.entity.Application;
 import com.roommate.roommate.application.entity.Status;
 import com.roommate.roommate.application.repository.ApplicationRepository;
 import com.roommate.roommate.auth.UserRepository;
+import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.post.entity.RoomPost;
 import com.roommate.roommate.post.entity.RoommatePost;
 import com.roommate.roommate.post.repository.RoomPostRepository;
@@ -18,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +42,13 @@ public class ApplicationService {
 
         RoommatePost rmp = roommatePostRepository.findById(roommatePostId).orElse(null);
         RoomPost rp = roomPostRepository.findById(roomPostId).orElse(null);
+
+        Long testUserId = rmp != null ? testUserId = rmp.getUser().getId() : rp.getUser().getId();
+
+        if (Objects.equals(testUserId, userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "자신의 모집글엔 지원할 수 없습니다.");
+        }
+
         Application application = Application.builder()
                 .roommatePost(rmp)
                 .roomPost(rp)
@@ -54,18 +63,21 @@ public class ApplicationService {
     public List<ApplicationListDto> getMyApplication(Long userId){
         List<Application> applications = applicationRepository.findByUser_IdOrderByApplicationIdDesc(userId);
         List<ApplicationListDto> response = new ArrayList<>();
+
         for (Application application : applications) {
             RoommatePost rmp = application.getRoommatePost();
             RoomPost rp = application.getRoomPost();
+            User postUser = userRepository.findById(rmp == null ? rp.getUser().getId() : rmp.getUser().getId()).orElseThrow();
+
             ApplicationListDto dto = ApplicationListDto.builder()
                     .applicationId(application.getApplicationId())
                     .roommatePostId((rmp == null) ? null : rmp.getRoommatePostId())
                     .roomPostId((rp == null) ? null : rp.getRoomPostId())
-                    .userId(application.getUser().getId())
-                    .userProfile(application.getUser().getProfileImageUrl())
-                    .username(application.getUser().getUsername())
-                    .age(application.getUser().getAge())
-                    .gender(application.getUser().getGender())
+                    .userId(postUser.getId())
+                    .userProfile(postUser.getProfileImageUrl())
+                    .username(postUser.getUsername())
+                    .age(postUser.getAge())
+                    .gender(postUser.getGender())
                     .status(application.getStatus())
                     .build();
             response.add(dto);
@@ -128,7 +140,7 @@ public class ApplicationService {
                 .orElseThrow();
 
         if (application.getRoommatePost() != null && !application.getRoommatePost().getRoommatePostId().equals(userId) || application.getRoomPost() != null && !application.getRoomPost().getRoomPostId().equals(userId))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 글을 수락할 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 글을 거절할 수 없습니다.");
 
         application.setStatus(Status.REJECTED);
         applicationRepository.save(application);
@@ -138,8 +150,8 @@ public class ApplicationService {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow();
 
-        if (application.getRoommatePost() != null && !application.getRoommatePost().getRoommatePostId().equals(userId) || application.getRoomPost() != null && !application.getRoomPost().getRoomPostId().equals(userId))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 글을 수락할 수 없습니다.");
+        if ( application.getStatus() != Status.ACCEPTED && (application.getRoommatePost() != null && !application.getRoommatePost().getRoommatePostId().equals(userId) || application.getRoomPost() != null && !application.getRoomPost().getRoomPostId().equals(userId)))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 글을 확정할 수 없습니다.");
 
         application.setStatus(Status.CONFIRMED);
 
@@ -163,4 +175,22 @@ public class ApplicationService {
         return result;
     }
 
+    public String getKakaoLink(Long userId, Long applicationId) {
+
+        Application application = applicationRepository.findById(applicationId).orElseThrow();
+        RoommatePost rmp = application.getRoommatePost();
+        RoomPost rp = application.getRoomPost();
+
+        String kakao = "";
+
+        // 지원자인 경우
+        if (Objects.equals(userId, application.getUser().getId())){
+            kakao = (rmp != null ? rmp.getUser().getKakaoOpenChatLink() : rp.getUser().getKakaoOpenChatLink());
+        }
+        // 모집자인 경우
+        else {
+            kakao = application.getUser().getKakaoOpenChatLink();
+        }
+        return kakao;
+    }
 }
