@@ -2,6 +2,7 @@ package com.roommate.roommate.matching;
 
 import com.roommate.roommate.matching.domain.DesiredProfile;
 import com.roommate.roommate.matching.domain.MyProfile;
+import com.roommate.roommate.post.dto.MatchedOptionsDto;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -75,21 +76,21 @@ public class MatchingService {
     }
 
     // 일치하는 옵션
-    public List<String> getMatchedOptions(DesiredProfile desired, MyProfile target) {
-        List<String> matched = new ArrayList<>();
+    public MatchedOptionsDto getMatchedOptions(DesiredProfile desired, MyProfile target) {
+        MatchedOptionsDto matchedOptionsDto = new MatchedOptionsDto();
 
-        if (isMatch(desired.getLifeCycleValue(), target.getLifeCycle())) matched.add("life_cycle:" + target.getLifeCycle());
-        if (isMatch(desired.getSmokingValue(), target.getSmoking())) matched.add("smoking:" + target.getSmoking());
-        if (isMatch(desired.getCleanFreqValue(), target.getCleanFreq())) matched.add("clean_freq:" + target.getCleanFreq());
-        if (isMatch(desired.getTidyLevelValue(), target.getTidyLevel())) matched.add("tidy_level:" + target.getTidyLevel());
-        if (isMatch(desired.getVisitorPolicyValue(), target.getVisitorPolicy())) matched.add("visitor_policy:" + target.getVisitorPolicy());
-        if (isMatch(desired.getRestroomUsagePatternValue(), target.getRestroomUsagePattern())) matched.add("restroom_usage_pattern:" + target.getRestroomUsagePattern());
-        if (isMatch(desired.getFoodOdorPolicyValue(), target.getFoodOdorPolicy())) matched.add("food_odor_policy:" + target.getFoodOdorPolicy());
-        if (isMatch(desired.getHomeStayValue(), target.getHomeStay())) matched.add("home_stay:" + target.getHomeStay());
-        if (isMatch(desired.getNoisePreferenceValue(), target.getNoisePreference())) matched.add("noise_preference:" + target.getNoisePreference());
-        if (isMatch(desired.getSleepSensitivityValue(), target.getSleepSensitivity())) matched.add("sleep_sensitivity:" + target.getSleepSensitivity());
+        if (isMatch(desired.getLifeCycleValue(), target.getLifeCycle())) matchedOptionsDto.setLifeCycle(desired.getLifeCycleValue());
+        if (isMatch(desired.getSmokingValue(), target.getSmoking())) matchedOptionsDto.setSmoking(desired.getSmokingValue());
+        if (isMatch(desired.getCleanFreqValue(), target.getCleanFreq())) matchedOptionsDto.setCleanFreq(desired.getCleanFreqValue());
+        if (isMatch(desired.getTidyLevelValue(), target.getTidyLevel())) matchedOptionsDto.setTidyLevel(desired.getTidyLevelValue());
+        if (isMatch(desired.getVisitorPolicyValue(), target.getVisitorPolicy())) matchedOptionsDto.setVisitorPolicy(desired.getVisitorPolicyValue());
+        if (isMatch(desired.getRestroomUsagePatternValue(), target.getRestroomUsagePattern())) matchedOptionsDto.setRestroomUsagePattern(desired.getRestroomUsagePatternValue());
+        if (isMatch(desired.getFoodOdorPolicyValue(), target.getFoodOdorPolicy())) matchedOptionsDto.setFoodOdorPolicy(desired.getFoodOdorPolicyValue());
+        if (isMatch(desired.getHomeStayValue(), target.getHomeStay())) matchedOptionsDto.setHomeStay(desired.getHomeStayValue());
+        if (isMatch(desired.getNoisePreferenceValue(), target.getNoisePreference())) matchedOptionsDto.setNoisePreference(desired.getNoisePreferenceValue());
+        if (isMatch(desired.getSleepSensitivityValue(), target.getSleepSensitivity())) matchedOptionsDto.setSleepSensitivity(desired.getSleepSensitivityValue());
 
-        return matched;
+        return matchedOptionsDto;
     }
 
     private <T> boolean isMatch(T desiredValue, T actualValue) {
