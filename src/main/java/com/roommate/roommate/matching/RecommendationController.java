@@ -22,14 +22,26 @@ public class RecommendationController {
 
     private final RecommendationService recommendationService;
 
-    // GET /recommendations?location=서울시 마포구
-    @GetMapping
-    public ResponseEntity<SuccessResponse<List<RecommendationDto>>> getRecommendations(
+    // GET /recommendations/room?location=서울시 마포구
+    @GetMapping("/room")
+    public ResponseEntity<SuccessResponse<List<RecommendationDto>>> getRoomRecommendations(
             @SessionAttribute(name = "userId") Long userId,
             @RequestParam("location") String location) { // 1. @RequestParam으로 location 받기
 
         // 2. 서비스 호출 시 userId와 location 함께 전달
-        List<RecommendationDto> recommendations = recommendationService.getRecommendations(userId, location);
+        List<RecommendationDto> recommendations = recommendationService.getRecommendations(userId, location, true);
+
+        return SuccessResponse.onSuccess("룸메이트 추천 목록 조회에 성공했습니다.", HttpStatus.OK, recommendations);
+    }
+
+    // GET /recommendations/roommate?location=서울시 마포구
+    @GetMapping("/roommate")
+    public ResponseEntity<SuccessResponse<List<RecommendationDto>>> getRoommateRecommendations(
+            @SessionAttribute(name = "userId") Long userId,
+            @RequestParam("location") String location) { // 1. @RequestParam으로 location 받기
+
+        // 2. 서비스 호출 시 userId와 location 함께 전달
+        List<RecommendationDto> recommendations = recommendationService.getRecommendations(userId, location, false);
 
         return SuccessResponse.onSuccess("룸메이트 추천 목록 조회에 성공했습니다.", HttpStatus.OK, recommendations);
     }
