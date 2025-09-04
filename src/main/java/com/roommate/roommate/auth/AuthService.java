@@ -3,9 +3,12 @@ package com.roommate.roommate.auth;
 import com.roommate.roommate.auth.domain.Gender;
 import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.dto.AuthResponse;
+import com.roommate.roommate.auth.dto.DetailProfileDto;
 import com.roommate.roommate.auth.dto.LoginRequest;
 import com.roommate.roommate.common.s3.S3Uploader;
+import com.roommate.roommate.matching.domain.DesiredProfile;
 import com.roommate.roommate.matching.domain.MyProfile;
+import com.roommate.roommate.matching.dto.DesiredProfileDto;
 import com.roommate.roommate.matching.dto.ProfileDto;
 import com.roommate.roommate.matching.repository.MyProfileRepository;
 import com.roommate.roommate.space.repository.SpaceMemberRepository;
@@ -120,5 +123,46 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("MyProfile이 존재하지 않습니다."));
 
         myProfile.updateMyProfile(profileDto);
+    }
+
+    // 사용자 프로필 조회
+    @Transactional
+    public DetailProfileDto getUserProfile(Long userId) {
+        // 1. 유저와 연관된 프로필들을 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다"));
+
+        MyProfile myProfileEntity = user.getMyProfile();
+        DesiredProfile desiredProfileEntity = user.getDesiredProfile();
+
+        // 2. MyProfile 엔티티를 ProfileDto로 변환
+        ProfileDto myProfileDto = new ProfileDto(
+                myProfileEntity.getUser().getId(),
+                myProfileEntity.getLifeCycle(),
+                myProfileEntity.getSmoking(),
+                myProfileEntity.getCleanFreq(),
+                myProfileEntity.getTidyLevel(),
+                myProfileEntity.getVisitorPolicy(),
+                myProfileEntity.getRestroomUsagePattern(),
+                myProfileEntity.getFoodOdorPolicy(),
+                myProfileEntity.getHomeStay(),
+                myProfileEntity.getNoisePreference(),
+                myProfileEntity.getSleepSensitivity()
+        );
+
+        // 3. DesiredProfile 엔티티를 DesiredProfileDto로 변환
+        DesiredProfileDto desiredProfileDto = new DesiredProfileDto(desiredProfileEntity);
+
+
+        // 4. 올바른 빌더 패턴과 변환된 DTO들을 사용하여 최종 응답 DTO 생성
+        //    (오류 수정: new DetailProfileDto().builder() -> DetailProfileDto.builder())
+        return DetailProfileDto.builder()
+                .name(user.getUsername())
+                .age(user.getAge())
+                .mbti(user.getMbti())
+                .gender(user.getGender())
+                .myProfile(myProfileDto)      // 수정된 필드명 적용
+                .desiredProfile(desiredProfileDto) // 수정된 필드명 적용
+                .build();
     }
 }
