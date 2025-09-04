@@ -75,6 +75,7 @@ public class RoomPost {
     @Column(nullable = true)
     private String cmd_cd;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Gender gender;
 

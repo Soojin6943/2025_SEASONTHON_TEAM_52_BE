@@ -9,6 +9,7 @@ import com.roommate.roommate.post.service.RoommatePostService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/roommate-posts")
 @RequiredArgsConstructor
+@Slf4j
 public class RoommatePostController {
 
     private final RoommatePostService roommatePostService;
@@ -37,8 +39,11 @@ public class RoommatePostController {
     }
 
     @GetMapping("/{roommatePostId}")
-    public ResponseEntity<SuccessResponse<RoommatePostDto.RoommateResponseDto>> getRoommatePost(@PathVariable(value = "roommatePostId") Long roommatePostId){
-        RoommatePostDto.RoommateResponseDto dto = roommatePostService.getRoommatePost(roommatePostId);
+    public ResponseEntity<SuccessResponse<RoommatePostDto.RoommateResponseDto>> getRoommatePost(
+            HttpSession session,
+            @PathVariable(value = "roommatePostId") Long roommatePostId){
+        Long userId = (Long) session.getAttribute("userId");
+        RoommatePostDto.RoommateResponseDto dto = roommatePostService.getRoommatePost(userId, roommatePostId);
         return SuccessResponse.onSuccess("모집글을 성공적으로 조회했습니다.", HttpStatus.OK, dto);
     }
 
@@ -50,8 +55,27 @@ public class RoommatePostController {
             @RequestParam(required = false) Integer rentMax,
             @RequestParam(required = false) String houseType,
             @RequestParam(required = false) MoveInDate moveInDate,
-            @RequestParam(required = false) Integer minStay) {
-        RoommatePostDto.RoommateList dto = roommatePostService.getRoommatePosts(depositMin, depositMax, rentMin, rentMax, houseType, moveInDate, minStay);
+            @RequestParam(required = false) Integer minStay,
+            @RequestParam(required = true) String area) {
+        RoommatePostDto.RoommateList dto = roommatePostService.getRoommatePosts(area, depositMin, depositMax, rentMin, rentMax, houseType, moveInDate, minStay);
+        return SuccessResponse.onSuccess("모집글들을 성공적으로 조회했습니다.", HttpStatus.OK, dto);
+    }
+
+    @GetMapping("/matching")
+    public ResponseEntity<SuccessResponse<RoommatePostDto.RoommateList>> getMatchingRoommatePosts(
+            HttpSession session,
+            @RequestParam(required = false) Integer depositMin,
+            @RequestParam(required = false) Integer depositMax,
+            @RequestParam(required = false) Integer rentMin,
+            @RequestParam(required = false) Integer rentMax,
+            @RequestParam(required = false) String houseType,
+            @RequestParam(required = false) MoveInDate moveInDate,
+            @RequestParam(required = false) Integer minStay,
+            @RequestParam(required = true) String area
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        log.info("GET /matching userId={}, area='{}'", userId, area);  // ← 들어오는지 확인
+        RoommatePostDto.RoommateList dto = roommatePostService.getMatchingRoommatePosts(userId, area, depositMin, depositMax, rentMin, rentMax, houseType, moveInDate, minStay);
         return SuccessResponse.onSuccess("모집글들을 성공적으로 조회했습니다.", HttpStatus.OK, dto);
     }
 }
