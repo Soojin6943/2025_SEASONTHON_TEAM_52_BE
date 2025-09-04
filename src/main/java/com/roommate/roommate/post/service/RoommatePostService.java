@@ -167,7 +167,7 @@ public class RoommatePostService {
             houseTypeList = null;
         }
         log.info("추천유저 반환");
-        List<RecommendationDto> recommendDtos = recommendationService.getRecommendations(userId, area);
+        List<RecommendationDto> recommendDtos = recommendationService.getRecommendations(userId, area, false);
         log.info("recommendDtos: {}", recommendDtos);
         List<Long> userIds = new ArrayList<>();
         for (RecommendationDto recommendDto : recommendDtos) {

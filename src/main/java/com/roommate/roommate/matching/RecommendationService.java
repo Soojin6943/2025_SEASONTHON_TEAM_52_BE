@@ -7,8 +7,11 @@ import com.roommate.roommate.matching.dto.RoomPostRecommendationDto;
 import com.roommate.roommate.matching.dto.RoommatePostRecommendationDto;
 import com.roommate.roommate.matching.repository.TestPostRepository;
 import com.roommate.roommate.post.dto.MatchedOptionsDto;
+<<<<<<< HEAD
 import com.roommate.roommate.post.entity.RoomPost;
 import com.roommate.roommate.post.entity.RoommatePost;
+=======
+>>>>>>> 9fd0fcf (feat: 성향분석 게시물 엔티티 연결 변경)
 import com.roommate.roommate.post.repository.RoomPostRepository;
 import com.roommate.roommate.post.repository.RoommatePostRepository;
 import com.theokanning.openai.runs.Run;
@@ -20,7 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.Objects;
+=======
+import java.util.Optional;
+>>>>>>> 9fd0fcf (feat: 성향분석 게시물 엔티티 연결 변경)
 import java.util.stream.Collectors;
 
 @Service
@@ -36,23 +43,35 @@ public class RecommendationService {
 
     private final UserRepository userRepository;
     private final MatchingService matchingService;
-    // 가정 테스트 (모집 공고)
     private final TestPostRepository postRepository;
     private final RoommatePostRepository roommatePostRepository;
     private final RoomPostRepository roomPostRepository;
 
+
     @Transactional
-    public List<RecommendationDto> getRecommendations(Long userId, String location){
+    public List<RecommendationDto> getRecommendations(Long userId, String location, Boolean room){
         // 1. 내 정보 조회
         User userA = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         // 2. 1차 필터링(DB) : 공고 활성화 + 지역 + 성별
-        List<User> candidates = postRepository.findActiveCandidates(
-                userA.getId(),
-                location,
-                userA.getGender()
-        );
+        // room 유무 값에 따라 적절한 Repository를 사용하여 후보자 목록 조회
+        List<User> candidates;
+        if (room) {
+            // room이 true이면 RoomPostRepository 사용
+            candidates = roomPostRepository.findActiveCandidates(
+                    userA.getId(),
+                    location,
+                    userA.getGender()
+            );
+        } else {
+            // room이 false이면 RoommatePostRepository 사용
+            candidates = roommatePostRepository.findActiveCandidates(
+                    userA.getId(),
+                    location,
+                    userA.getGender()
+            );
+        }
 
         List<RecommendationDto> results = new ArrayList<>();
 
