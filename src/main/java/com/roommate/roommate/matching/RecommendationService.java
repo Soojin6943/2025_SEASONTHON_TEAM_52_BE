@@ -3,20 +3,29 @@ package com.roommate.roommate.matching;
 import com.roommate.roommate.auth.UserRepository;
 import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.matching.dto.RecommendationDto;
+import com.roommate.roommate.matching.dto.RoomPostRecommendationDto;
+import com.roommate.roommate.matching.dto.RoommatePostRecommendationDto;
 import com.roommate.roommate.matching.repository.TestPostRepository;
 import com.roommate.roommate.post.dto.MatchedOptionsDto;
+import com.roommate.roommate.post.entity.RoomPost;
+import com.roommate.roommate.post.entity.RoommatePost;
+import com.roommate.roommate.post.repository.RoomPostRepository;
+import com.roommate.roommate.post.repository.RoommatePostRepository;
 import com.theokanning.openai.runs.Run;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RecommendationService {
     // 전체 추첨 흐름 총괄
     /**
@@ -29,6 +38,8 @@ public class RecommendationService {
     private final MatchingService matchingService;
     // 가정 테스트 (모집 공고)
     private final TestPostRepository postRepository;
+    private final RoommatePostRepository roommatePostRepository;
+    private final RoomPostRepository roomPostRepository;
 
     @Transactional
     public List<RecommendationDto> getRecommendations(Long userId, String location){
@@ -92,5 +103,70 @@ public class RecommendationService {
                 .build();
 
         return commonMatches;
+    }
+
+    @Transactional(readOnly = true)
+    public List<RoommatePostRecommendationDto> getRoommateRecommendations(Long userId, String area){
+
+        List<RecommendationDto> recommendations = getRecommendations(userId, area);
+        if (recommendations.isEmpty()) return List.of();
+
+        List<RoommatePostRecommendationDto> results = new ArrayList<>();
+        for (RecommendationDto recommendation : recommendations){
+            Long id =  recommendation.getUserId();
+            User user = userRepository.findById(id).orElseThrow();
+            RoommatePost rmp = roommatePostRepository.findByUser_IdAndIsRecruitingTrue(id).orElse(null);
+            // 그 유저는 넘어가
+            if (rmp == null)
+                continue;
+            RoommatePostRecommendationDto result = RoommatePostRecommendationDto.builder()
+                    .roommatePostId(rmp.getRoommatePostId())
+                    .userId(id)
+                    .username(user.getUsername())
+                    .userProfile(user.getProfileImageUrl())
+                    .age(user.getAge())
+                    .mbti(user.getMbti())
+                    .score(recommendation.getAverageScore())
+                    .matchedOptions(recommendation.getMatchedOptions())
+                    .title(rmp.getTitle())
+                    .deposit(rmp.getDeposit() != null ? rmp.getDeposit() : null)
+                    .monthlyRent(rmp.getMonthlyRent() != null ? rmp.getMonthlyRent() : null)
+                    .build();
+
+            results.add(result);
+        }
+        return results;
+    }
+
+    @Transactional(readOnly = true)
+    public List<RoomPostRecommendationDto> getRoomRecommendations(Long userId, String area){
+
+        List<RecommendationDto> recommendations = getRecommendations(userId, area);
+        if (recommendations.isEmpty()) return List.of();
+
+        List<RoomPostRecommendationDto> results = new ArrayList<>();
+        for (RecommendationDto recommendation : recommendations){
+            Long id =  recommendation.getUserId();
+            User user = userRepository.findById(id).orElseThrow();
+            RoomPost rp = roomPostRepository.findByUser_IdAndIsRecruitingTrue(id).orElse(null);
+            // 그 유저는 넘어가
+            if (rp == null)
+                continue;
+            RoomPostRecommendationDto result = RoomPostRecommendationDto.builder()
+                    .roomPostId(rp.getRoomPostId())
+                    .userId(id)
+                    .username(user.getUsername())
+                    .userProfile(user.getProfileImageUrl())
+                    .age(user.getAge())
+                    .mbti(user.getMbti())
+                    .score(recommendation.getAverageScore())
+                    .matchedOptions(recommendation.getMatchedOptions())
+                    .title(rp.getTitle())
+                    .deposit(rp.getDeposit() != null ? rp.getDeposit() : null)
+                    .monthlyRent(rp.getMonthlyRent() != null ? rp.getMonthlyRent() : null)
+                    .build();
+            results.add(result);
+        }
+        return results;
     }
 }
