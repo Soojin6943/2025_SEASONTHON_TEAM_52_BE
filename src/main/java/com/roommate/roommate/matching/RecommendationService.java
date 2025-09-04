@@ -7,14 +7,10 @@ import com.roommate.roommate.matching.dto.RoomPostRecommendationDto;
 import com.roommate.roommate.matching.dto.RoommatePostRecommendationDto;
 import com.roommate.roommate.matching.repository.TestPostRepository;
 import com.roommate.roommate.post.dto.MatchedOptionsDto;
-<<<<<<< HEAD
 import com.roommate.roommate.post.entity.RoomPost;
 import com.roommate.roommate.post.entity.RoommatePost;
-=======
->>>>>>> 9fd0fcf (feat: 성향분석 게시물 엔티티 연결 변경)
 import com.roommate.roommate.post.repository.RoomPostRepository;
 import com.roommate.roommate.post.repository.RoommatePostRepository;
-import com.theokanning.openai.runs.Run;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,11 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-<<<<<<< HEAD
 import java.util.Objects;
-=======
 import java.util.Optional;
->>>>>>> 9fd0fcf (feat: 성향분석 게시물 엔티티 연결 변경)
 import java.util.stream.Collectors;
 
 @Service
@@ -127,7 +120,7 @@ public class RecommendationService {
     @Transactional(readOnly = true)
     public List<RoommatePostRecommendationDto> getRoommateRecommendations(Long userId, String area){
 
-        List<RecommendationDto> recommendations = getRecommendations(userId, area);
+        List<RecommendationDto> recommendations = getRecommendations(userId, area, false);
         if (recommendations.isEmpty()) return List.of();
 
         List<RoommatePostRecommendationDto> results = new ArrayList<>();
@@ -160,7 +153,7 @@ public class RecommendationService {
     @Transactional(readOnly = true)
     public List<RoomPostRecommendationDto> getRoomRecommendations(Long userId, String area){
 
-        List<RecommendationDto> recommendations = getRecommendations(userId, area);
+        List<RecommendationDto> recommendations = getRecommendations(userId, area, true);
         if (recommendations.isEmpty()) return List.of();
 
         List<RoomPostRecommendationDto> results = new ArrayList<>();
