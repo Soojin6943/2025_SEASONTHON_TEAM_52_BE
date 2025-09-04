@@ -153,7 +153,7 @@ public class RoomPostService {
         } else {
             houseTypeList = null;
         }
-        List<RecommendationDto> recommendDtos = recommendationService.getRecommendations(userId, area);
+        List<RecommendationDto> recommendDtos = recommendationService.getRecommendations(userId, area, true);
         List<Long> userIds = new ArrayList<>();
         for (RecommendationDto recommendDto : recommendDtos) {
             Long id = recommendDto.getUserId();
