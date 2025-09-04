@@ -4,6 +4,7 @@ import com.roommate.roommate.auth.UserRepository;
 import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.matching.dto.RecommendationDto;
 import com.roommate.roommate.matching.repository.TestPostRepository;
+import com.roommate.roommate.post.dto.MatchedOptionsDto;
 import com.theokanning.openai.runs.Run;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -61,15 +62,12 @@ public class RecommendationService {
             double scoreBtoA = matchingService.calculateMatchScore(userB.getDesiredProfile(), userA.getMyProfile());
 
             // 5. 일치하는 옵션 반환 (양방향 일치하는 옵션만, 무관은 제외)
-            List<String> matchesFromA = matchingService.getMatchedOptions(userA.getDesiredProfile(), userB.getMyProfile());
-            List<String> matchesFromB = matchingService.getMatchedOptions(userB.getDesiredProfile(), userA.getMyProfile());
+            MatchedOptionsDto matchesFromA = matchingService.getMatchedOptions(userA.getDesiredProfile(), userB.getMyProfile());
+            MatchedOptionsDto matchesFromB = matchingService.getMatchedOptions(userB.getDesiredProfile(), userA.getMyProfile());
 
-            List<String> commonMatches = matchesFromA.stream()
-                    .filter(matchesFromB::contains)
-                    .toList();
+            MatchedOptionsDto commonMatches = checkMatchedOptions(matchesFromA, matchesFromB);
 
             results.add(new RecommendationDto(userB, scoreAtoB, scoreBtoA, commonMatches));
-
         }
 
         // 5. 내림차순 정렬
@@ -77,5 +75,22 @@ public class RecommendationService {
                 .sorted(Comparator.comparing(RecommendationDto::getAverageScore).reversed())
                 .collect(Collectors.toList());
 
+    }
+
+    public MatchedOptionsDto checkMatchedOptions(MatchedOptionsDto matchesFromA, MatchedOptionsDto matchesFromB) {
+        MatchedOptionsDto commonMatches = MatchedOptionsDto.builder()
+                .lifeCycle(matchesFromA.getLifeCycle() == matchesFromB.getLifeCycle() ? matchesFromA.getLifeCycle() : null)
+                .smoking(matchesFromA.getSmoking() == matchesFromB.getSmoking() ? matchesFromA.getSmoking() : null)
+                .cleanFreq(matchesFromA.getCleanFreq() == matchesFromB.getCleanFreq() ? matchesFromA.getCleanFreq() : null)
+                .tidyLevel(matchesFromA.getTidyLevel() == matchesFromB.getTidyLevel() ? matchesFromA.getTidyLevel() : null)
+                .visitorPolicy(matchesFromA.getVisitorPolicy() == matchesFromB.getVisitorPolicy() ? matchesFromA.getVisitorPolicy() : null)
+                .restroomUsagePattern(matchesFromA.getRestroomUsagePattern() == matchesFromB.getRestroomUsagePattern() ? matchesFromA.getRestroomUsagePattern() : null)
+                .foodOdorPolicy(matchesFromA.getFoodOdorPolicy() == matchesFromB.getFoodOdorPolicy() ? matchesFromA.getFoodOdorPolicy() : null)
+                .homeStay(matchesFromA.getHomeStay() == matchesFromB.getHomeStay() ? matchesFromA.getHomeStay() : null)
+                .noisePreference(matchesFromA.getNoisePreference() == matchesFromB.getNoisePreference() ? matchesFromA.getNoisePreference() : null)
+                .sleepSensitivity(matchesFromA.getSleepSensitivity() == matchesFromB.getSleepSensitivity() ? matchesFromA.getSleepSensitivity() : null)
+                .build();
+
+        return commonMatches;
     }
 }

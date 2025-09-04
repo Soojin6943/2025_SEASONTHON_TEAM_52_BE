@@ -33,6 +33,7 @@ public class RoommatePostDto {
         private Integer age;
         private Gender gender;
         private Mbti mbti;
+        private MatchedOptionsDto matchedOptions;
         private String title;
         private Double latitude;
         private Double longitude;

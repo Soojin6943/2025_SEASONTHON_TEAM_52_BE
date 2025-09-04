@@ -8,5 +8,5 @@ import com.roommate.roommate.post.entity.RoomPost;
 import java.util.List;
 
 public interface RoomPostRepositoryCustom {
-    List<RoomPost> filterPosts(Integer depositMin, Integer depositMax, Integer rentMin, Integer rentMax, List<HouseType> houseTypes, MoveInDate moveInDate, Integer minStayPeriod);
+    List<RoomPost> filterPosts(String area, Integer depositMin, Integer depositMax, Integer rentMin, Integer rentMax, List<HouseType> houseTypes, MoveInDate moveInDate, Integer minStayPeriod);
 }

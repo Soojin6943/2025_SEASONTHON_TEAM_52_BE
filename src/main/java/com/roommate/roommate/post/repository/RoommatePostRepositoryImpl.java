@@ -16,12 +16,14 @@ public class RoommatePostRepositoryImpl implements RoommatePostRepositoryCustom 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<RoommatePost> filterPosts(Integer depositMin, Integer depositMax, Integer rentMin, Integer rentMax, List<HouseType> houseTypes, MoveInDate moveInDate, Integer minStayPeriod) {
+    public List<RoommatePost> filterPosts(String area, Integer depositMin, Integer depositMax, Integer rentMin, Integer rentMax, List<HouseType> houseTypes, MoveInDate moveInDate, Integer minStayPeriod) {
         QRoommatePost rp = QRoommatePost.roommatePost;
 
         BooleanBuilder builder = new BooleanBuilder();
 
         builder.and(rp.isRecruiting.eq(true));
+        builder.and(rp.area.eq(area));
+
         if (depositMin != null && depositMin >= 0 && depositMax != null && depositMax >= 0) {
             builder.and(rp.deposit.between(depositMin, depositMax));
         }

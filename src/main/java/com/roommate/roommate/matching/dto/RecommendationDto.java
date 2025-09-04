@@ -1,6 +1,7 @@
 package com.roommate.roommate.matching.dto;
 
 import com.roommate.roommate.auth.domain.User;
+import com.roommate.roommate.post.dto.MatchedOptionsDto;
 import lombok.Getter;
 
 import java.util.List;
@@ -18,9 +19,9 @@ public class RecommendationDto {
     // 평균 점수
     private double averageScore;
     // 일치하는 옵션
-    private List<String> matchedOptions;
+    private MatchedOptionsDto matchedOptions;
 
-    public RecommendationDto(User user, double scoreAtoB, double scoreBtoA, List<String> matchedOptions){
+    public RecommendationDto(User user, double scoreAtoB, double scoreBtoA, MatchedOptionsDto matchedOptions){
         this.userId = user.getId();
         this.userName = user.getUsername();
         this.userAge = user.getAge();
