@@ -84,4 +84,14 @@ public class ApplicationController {
         ApplicationConfirmDto response = applicationService.confirmApplication(applicationId, userId);
         return SuccessResponse.onSuccess("룸메이트를 확정했습니다.", HttpStatus.OK, response);
     }
+
+    @GetMapping("/{applicationId}/chat")
+    public ResponseEntity<SuccessResponse<String>> checkKakao(
+            HttpSession session,
+            @PathVariable(value = "applicationId") Long applicationId
+    ){
+        Long userId = (Long) session.getAttribute("userId");
+        String kakaoLink = applicationService.getKakaoLink(userId, applicationId);
+        return SuccessResponse.onSuccess("상대 유저의 오픈채팅을 가져왔습니다.", HttpStatus.OK, kakaoLink);
+    }
 }
