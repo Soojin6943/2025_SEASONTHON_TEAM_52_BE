@@ -2,6 +2,7 @@ package com.roommate.roommate.auth.domain;
 
 import com.roommate.roommate.matching.domain.DesiredProfile;
 import com.roommate.roommate.matching.domain.MyProfile;
+import com.roommate.roommate.matching.domain.enums.Mbti;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -55,6 +56,15 @@ public class User {
     @Column(name = "has_space", nullable = false)
     private boolean hasSpace = false;
 
+    // mbti
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Mbti mbti;
+
+    // 사용자 프로필 이미지
+    @Column
+    private String profileImageUrl;
+
     // 생성일
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -85,5 +95,15 @@ public class User {
     // 스페이스 소속 여부 업데이트
     public void updateHasSpace(boolean hasSpace) {
         this.hasSpace = hasSpace;
+    }
+
+    // mbti 수정
+    public void updateMbti(Mbti mbti) {
+        this.mbti = mbti;
+    }
+
+    // 사용자 프로필 이미지 업로드
+    public void updateProfileImage(String profileImageUrl){
+        this.profileImageUrl = profileImageUrl;
     }
 }

@@ -1,11 +1,9 @@
 package com.roommate.roommate.auth;
 
 import com.roommate.roommate.auth.domain.User;
-import com.roommate.roommate.auth.dto.AuthResponse;
-import com.roommate.roommate.auth.dto.LoginRequest;
-import com.roommate.roommate.auth.dto.UserProfile;
-import com.roommate.roommate.auth.dto.UpdateProfileRequest;
+import com.roommate.roommate.auth.dto.*;
 import com.roommate.roommate.common.SuccessResponse;
+import com.roommate.roommate.matching.dto.ProfileDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Tag(name = "Auth")
@@ -74,7 +74,7 @@ public class AuthController {
 
     @Operation(summary = "프로필 조회")
     @GetMapping("/profile")
-    public ResponseEntity<SuccessResponse<UserProfile>> getProfile(HttpSession session) {
+    public ResponseEntity<UserProfile> getProfile(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         
         if (userId == null) {
@@ -97,12 +97,12 @@ public class AuthController {
                 user.getKakaoOpenChatLink()
         );
         
-        return SuccessResponse.onSuccess("프로필 조회에 성공했습니다.", HttpStatus.OK, profile);
+        return ResponseEntity.ok(profile);
     }
 
     @Operation(summary = "프로필 업데이트")
     @PutMapping("/profile")
-    public ResponseEntity<SuccessResponse<UserProfile>> updateProfile(
+    public ResponseEntity<UserProfile> updateProfile(
             @RequestBody @Valid UpdateProfileRequest request,
             HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -136,22 +136,59 @@ public class AuthController {
                 user.getKakaoOpenChatLink()
         );
         
-        return SuccessResponse.onSuccess("프로필 업데이트에 성공했습니다.", HttpStatus.OK, updatedProfile);
+        return ResponseEntity.ok(updatedProfile);
     }
 
-    @Operation(summary = "디버깅: 사용자 스페이스 소속 여부 확인")
-    @GetMapping("/debug/space-status")
-    public ResponseEntity<SuccessResponse<String>> debugSpaceStatus(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        
-        if (userId == null) {
-            return ResponseEntity.status(401).build();
+    // 오픈 채팅 링크 추가 : PATCH /users/me/open-chat-link
+    @Operation(summary = "오픈 채팅 링크 추가")
+    @PatchMapping("/me/open-chat-link")
+    public ResponseEntity<SuccessResponse<Void>> setChatLink(@SessionAttribute(name = "userId") Long userId,
+                                                             @RequestBody OpenChatLinkRequest requestDto){
+
+        authService.setChatLink(userId, requestDto.getLink());
+
+        // 데이터 없는 응답 반환
+        return SuccessResponse.ok("성공적으로 링크를 추가했습니다.");
+
+    }
+
+    @Operation(summary = "사용자 프로필 이미지 등록")
+    @PostMapping("/images")
+    public ResponseEntity<SuccessResponse<String>> upload(@SessionAttribute("userId") Long userId, @RequestParam("image") MultipartFile imageFile){
+        try {
+            // 이미지 비었는지 확인
+            if (imageFile.isEmpty()) {
+                // TODO 예외 처리
+            }
+
+            String imageUrl = authService.updateProfileImage(userId, imageFile);
+
+            return SuccessResponse.onSuccess("프로필 이미지를 성공적으로 변경했습니다",
+                    HttpStatus.OK,
+                    imageUrl
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 업로드에 실패했습니다.", e);
         }
-
-        // 직접 스페이스 소속 여부 확인
-        boolean hasSpace = authService.checkUserHasSpace(userId);
-        
-        String debugInfo = String.format("User ID: %d, Has Space: %s", userId, hasSpace);
-        return SuccessResponse.onSuccess("디버깅 정보", HttpStatus.OK, debugInfo);
     }
+
+    @Operation(summary = "사용자 성향 수정")
+    @PatchMapping("/my-profile")
+    public ResponseEntity<SuccessResponse<Void>> updateMyProfile(@SessionAttribute("userId") Long userId, @RequestBody ProfileDto profileDto){
+
+        authService.updateMyProfile(userId, profileDto);
+
+        return SuccessResponse.ok("성공적으로 사용자 성향을 수정했습니다.");
+    }
+
+    @Operation(summary = "유저 프로필 조회")
+    @GetMapping("/profiles/{userId}")
+    public ResponseEntity<SuccessResponse<DetailProfileDto>> getProfile(
+            @PathVariable Long userId
+    ) {
+        DetailProfileDto detailProfileDto = authService.getUserProfile(userId);
+
+        return SuccessResponse.onSuccess("프로필 조회에 성공했습니다.", HttpStatus.OK, detailProfileDto);
+    }
+
 }

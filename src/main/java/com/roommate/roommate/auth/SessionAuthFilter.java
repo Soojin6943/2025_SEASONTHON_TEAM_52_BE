@@ -30,7 +30,7 @@ public class SessionAuthFilter implements Filter {
             requestURI.startsWith("/swagger-resources/") ||
             requestURI.startsWith("/webjars/") ||
             requestURI.startsWith("/api/test/") ||
-            requestURI.startsWith("/health") ||
+            requestURI.startsWith("/health")||
             requestURI.equals("/") ||
             requestURI.endsWith(".html") ||
             requestURI.endsWith(".css") ||
