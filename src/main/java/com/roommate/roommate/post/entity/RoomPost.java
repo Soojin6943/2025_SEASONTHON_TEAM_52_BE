@@ -42,12 +42,18 @@ public class RoomPost {
     @Column(nullable = false)
     private Integer managementFee;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private HouseType houseType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RoomNum roomNum;
 
     @Column(nullable = false)
     private Double size;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private MoveInDate moveInDate;
 
