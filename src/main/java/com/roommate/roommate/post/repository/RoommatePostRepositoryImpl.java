@@ -37,9 +37,7 @@ public class RoommatePostRepositoryImpl implements RoommatePostRepositoryCustom 
             builder.and(rp.minStayPeriod.eq(minStayPeriod));
         }
         if (houseTypes != null && !houseTypes.isEmpty()) {
-            for (HouseType houseType : houseTypes) {
-                builder.and(rp.houseTypes.contains(houseType));
-            }
+            builder.and(rp.houseType.in(houseTypes));
         }
 
         return queryFactory
