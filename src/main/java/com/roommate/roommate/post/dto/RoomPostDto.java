@@ -4,6 +4,7 @@ import com.roommate.roommate.auth.domain.Gender;
 import com.roommate.roommate.matching.domain.enums.Mbti;
 import com.roommate.roommate.post.entity.HouseType;
 import com.roommate.roommate.post.entity.MoveInDate;
+import com.roommate.roommate.post.entity.RoomNum;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -40,6 +41,7 @@ public class RoomPostDto {
         private Integer monthlyRent;
         private Integer managementFee;
         private HouseType houseType;
+        private RoomNum roomNum;
         private Double size;
         private MoveInDate moveInDate;
         private Integer minStayPeriod;
