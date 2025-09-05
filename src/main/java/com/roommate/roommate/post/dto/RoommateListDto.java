@@ -1,6 +1,7 @@
 package com.roommate.roommate.post.dto;
 
 import com.roommate.roommate.auth.domain.Gender;
+import com.roommate.roommate.post.entity.HouseType;
 import lombok.*;
 
 @Getter
@@ -17,4 +18,5 @@ public class RoommateListDto {
     private String title;
     private Integer deposit;
     private Integer monthlyRent;
+    private HouseType houseType;
 }

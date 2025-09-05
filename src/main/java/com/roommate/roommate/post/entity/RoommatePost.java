@@ -7,8 +7,6 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -41,14 +39,9 @@ public class RoommatePost {
     @Column(nullable = true)
     private Integer monthlyRent;
 
-    @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING)
-    @CollectionTable(
-            name = "roommate_post_house_type",
-            joinColumns = @JoinColumn(name = "roommate_post_id")
-    )
     @Column(nullable = true)
-    private Set<HouseType> houseTypes;
+    private HouseType houseType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)

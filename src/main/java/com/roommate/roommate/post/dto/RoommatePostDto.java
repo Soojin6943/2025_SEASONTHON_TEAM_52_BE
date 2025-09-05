@@ -39,7 +39,7 @@ public class RoommatePostDto {
         private Double longitude;
         private Integer deposit;
         private Integer monthlyRent;
-        private List<HouseType> houseTypes;
+        private HouseType houseType;
         private MoveInDate moveInDate;
         private Integer minStayPeriod;
         private String content;
