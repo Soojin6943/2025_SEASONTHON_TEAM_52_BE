@@ -30,8 +30,8 @@ public class RoommatePostController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SuccessResponse<RoommatePostDto.RoommateCreateResponseDto>> createRoommatePost(
             HttpSession session,
-            @RequestPart(value = "photo", required = false) 
-            @Schema(description = "업로드할 사진 파일 (선택사항)") 
+            @RequestPart(value = "photo", required = false)
+            @Schema(type = "string", format = "binary", description = "업로드할 사진 파일 (선택사항)")
             MultipartFile photo,
             @RequestPart(value = "meta", required = true) 
             @Schema(description = "룸메이트 모집글 메타데이터 (JSON 문자열)", 

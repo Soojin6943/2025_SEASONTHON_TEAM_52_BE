@@ -11,5 +11,5 @@ public record AreaInfo(
         Integer median,
         
         @Schema(description = "평균 월세", example = "820000")
-        Integer average
+        Integer avg
 ) {}
