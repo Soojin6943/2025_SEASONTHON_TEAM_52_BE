@@ -221,4 +221,63 @@ public class LocationService {
         
         return result;
     }
+    
+    // 좌표값으로 구/동 정보 조회
+    public LocationData getLocationByCoordinates(Double latitude, Double longitude) {
+        if (latitude == null || longitude == null) {
+            throw new RuntimeException("좌표값을 입력해주세요.");
+        }
+        
+        // 먼저 동 정보 조회 (더 정확한 위치)
+        String dongSql = "SELECT dong_name, emd_cd, bjcd FROM dong WHERE ST_Contains(geom, ST_GeomFromText(?, 4326)) LIMIT 1";
+        String point = String.format("POINT(%f %f)", longitude, latitude);
+        
+        try {
+            List<Map<String, Object>> dongResults = jdbcTemplate.queryForList(dongSql, point);
+            
+            if (!dongResults.isEmpty()) {
+                Map<String, Object> dongRow = dongResults.get(0);
+                String dongName = (String) dongRow.get("dong_name");
+                String emdCd = (String) dongRow.get("emd_cd");
+                String bjcd = (String) dongRow.get("bjcd");
+                
+                // 구 정보 조회
+                String guSql = "SELECT gu_name FROM gu WHERE bjcd = ?";
+                List<Map<String, Object>> guResults = jdbcTemplate.queryForList(guSql, bjcd);
+                
+                if (!guResults.isEmpty()) {
+                    String guName = (String) guResults.get(0).get("gu_name");
+                    String area = guName + " " + dongName;
+                    
+                    return new LocationData(guName, dongName, bjcd, emdCd, area);
+                }
+            }
+            
+            // 동 정보가 없으면 구 정보만 조회
+            String guSql = "SELECT gu_name, bjcd FROM gu WHERE ST_Contains(geom, ST_GeomFromText(?, 4326)) LIMIT 1";
+            List<Map<String, Object>> guResults = jdbcTemplate.queryForList(guSql, point);
+            
+            if (!guResults.isEmpty()) {
+                Map<String, Object> guRow = guResults.get(0);
+                String guName = (String) guRow.get("gu_name");
+                String bjcd = (String) guRow.get("bjcd");
+                
+                return new LocationData(guName, null, bjcd, null, guName);
+            }
+            
+            throw new RuntimeException("해당 좌표에 대한 지역 정보를 찾을 수 없습니다.");
+            
+        } catch (Exception e) {
+            throw new RuntimeException("좌표 조회 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+    
+    // 지역 정보를 담는 내부 클래스
+    public record LocationData(
+        String guName,
+        String dongName, 
+        String bjcd,
+        String emdCd,
+        String area
+    ) {}
 }

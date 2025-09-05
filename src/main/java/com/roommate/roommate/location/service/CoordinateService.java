@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Random;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -16,6 +18,7 @@ public class CoordinateService {
     
     private final GuRepository guRepository;
     private final DongRepository dongRepository;
+    private final Random random = new Random();
     
     // 좌표로 구 정보 조회 (Repository의 최적화된 네이티브 쿼리 사용)
     public Gu findGuByCoordinates(double longitude, double latitude) {
@@ -104,5 +107,30 @@ public class CoordinateService {
                 .longitude(longitude)
                 .latitude(latitude)
                 .build();
+    }
+    
+    /**
+     * 개인정보보호를 위해 좌표에 랜덤 오프셋을 적용합니다.
+     * 약 100-200m 범위 내에서 랜덤하게 좌표를 이동시킵니다.
+     * 
+     * @param longitude 원본 경도
+     * @param latitude 원본 위도
+     * @return 오프셋이 적용된 좌표 정보
+     */
+    public LocationInfo applyCoordinateOffset(double longitude, double latitude) {
+        // 약 100-200m 범위의 오프셋 (대략 0.001-0.002도)
+        double offsetRange = 0.0015; // 약 150m
+        
+        // -1 ~ 1 사이의 랜덤 값 생성
+        double longitudeOffset = (random.nextDouble() - 0.5) * 2 * offsetRange;
+        double latitudeOffset = (random.nextDouble() - 0.5) * 2 * offsetRange;
+        
+        double offsetLongitude = longitude + longitudeOffset;
+        double offsetLatitude = latitude + latitudeOffset;
+        
+        log.info("좌표 오프셋 적용: 원본({}, {}) -> 오프셋({}, {})", 
+                longitude, latitude, offsetLongitude, offsetLatitude);
+        
+        return findLocationByCoordinates(offsetLongitude, offsetLatitude);
     }
 }
