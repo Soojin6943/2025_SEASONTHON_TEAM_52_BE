@@ -50,11 +50,12 @@ public class MonthlyStatsController {
         return ResponseEntity.ok(response);
     }
     
-    @Operation(summary = "지역별 최근 6개월 트렌드 조회", description = "특정 지역의 최근 6개월 월세 트렌드를 조회합니다.")
-    @GetMapping("/{regionCode}/trend")
-    public ResponseEntity<TrendResponse> getRecentTrend(
-            @PathVariable String regionCode) {
-        TrendResponse response = monthlyStatsService.getRecentTrend(regionCode);
+    @Operation(summary = "지역별 주택유형별 최근 6개월 트렌드 조회", description = "특정 지역과 주택유형의 최근 6개월 월세 트렌드를 조회합니다.")
+    @GetMapping("/{regionCode}/type/{type}/trend")
+    public ResponseEntity<TrendResponse> getRecentTrendByType(
+            @PathVariable String regionCode,
+            @PathVariable String type) {
+        TrendResponse response = monthlyStatsService.getRecentTrendByType(regionCode, type);
         return ResponseEntity.ok(response);
     }
 }

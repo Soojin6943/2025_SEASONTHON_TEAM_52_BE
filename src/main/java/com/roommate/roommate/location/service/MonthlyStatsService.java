@@ -69,23 +69,6 @@ public class MonthlyStatsService {
         return convertToResponse(stats);
     }
     
-    // 특정 지역의 최근 6개월 트렌드 조회
-    public TrendResponse getRecentTrend(String regionCode) {
-        List<MonthlyStats> recentStats = monthlyStatsRepository.findRecent6MonthsByRegionCode(regionCode);
-        
-        if (recentStats.isEmpty()) {
-            throw new RuntimeException("해당 지역의 트렌드 데이터를 찾을 수 없습니다.");
-        }
-        
-        String regionName = recentStats.get(0).getRegionName();
-        
-        List<MonthlyTrendData> trendData = recentStats.stream()
-                .map(this::convertToTrendData)
-                .collect(Collectors.toList());
-        
-        return new TrendResponse(regionCode, regionName, trendData);
-    }
-    
     // 특정 지역과 주택유형의 최근 6개월 트렌드 조회
     public TrendResponse getRecentTrendByType(String regionCode, String type) {
         List<MonthlyStats> recentStats = monthlyStatsRepository.findRecent6MonthsByRegionCodeAndType(regionCode, type);

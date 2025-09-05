@@ -60,7 +60,7 @@ public class RoomPostService {
                 requestDto.getLatitude()
         );
 
-        //좌표에 오프셋 적용하여 저장
+        //좌표에 오프셋 적용하여 저장데이터는는
         LocationInfo offsetLocation = coordinateService.applyCoordinateOffset(
                 requestDto.getLongitude(), 
                 requestDto.getLatitude()
