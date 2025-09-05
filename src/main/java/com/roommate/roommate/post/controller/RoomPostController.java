@@ -31,11 +31,11 @@ public class RoomPostController {
     public ResponseEntity<SuccessResponse<RoomPostDto.RoomCreateResponseDto>> createRoomPost(
             HttpSession session,
             @RequestPart(value = "photo", required = false) 
-            @Schema(description = "업로드할 사진 파일 (선택사항)") 
+            @Schema(type = "string", format = "binary", description = "업로드할 사진 파일 (선택사항)")
             MultipartFile photo,
             @RequestPart(value = "meta", required = true) 
             @Schema(description = "방 모집글 메타데이터 (JSON 문자열)", 
-                    example = "{\"title\":\"강남구 원룸 방 구해요\",\"content\":\"강남구 역삼동 원룸에서 룸메이트를 구합니다.\",\"latitude\":37.5665,\"longitude\":126.9780,\"deposit\":1000,\"monthlyRent\":50,\"managementFee\":5,\"houseType\":\"APARTMENT\",\"size\":25.5,\"moveInDate\":\"Q1\",\"minStayPeriod\":6}") 
+                    example = "{\"title\":\"강남구 원룸 방 구해요\",\"content\":\"강남구 역삼동 원룸에서 룸메이트를 구합니다.\",\"latitude\":37.5665,\"longitude\":126.9780,\"deposit\":1000,\"monthlyRent\":50,\"managementFee\":5,\"houseType\":\"APARTMENT\",\"roomNum\":\"ONE_ROOM\",\"size\":25.5,\"moveInDate\":\"Q1\",\"minStayPeriod\":6}")
             String metaJson) {
         try {
             Long userId = (Long) session.getAttribute("userId");
