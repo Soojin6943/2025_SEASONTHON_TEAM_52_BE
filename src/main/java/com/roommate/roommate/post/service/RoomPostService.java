@@ -3,6 +3,8 @@ package com.roommate.roommate.post.service;
 import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.UserRepository;
 import com.roommate.roommate.common.s3.S3Uploader;
+import com.roommate.roommate.location.service.CoordinateService;
+import com.roommate.roommate.location.dto.LocationInfo;
 import com.roommate.roommate.matching.MatchingService;
 import com.roommate.roommate.matching.RecommendationService;
 import com.roommate.roommate.matching.dto.RecommendationDto;
@@ -34,6 +36,7 @@ public class RoomPostService {
     private final RoomPostRepository roomPostRepository;
     private final S3Uploader s3Uploader;
     private final UserRepository userRepository;
+    private final CoordinateService coordinateService;
     private final RecommendationService recommendationService;
     private final MatchingService matchingService;
     private final DesiredProfileRepository desiredProfileRepository;
@@ -52,11 +55,22 @@ public class RoomPostService {
             photoUrl = s3Uploader.upload(photo);
         }
 
+        LocationInfo locationInfo = coordinateService.findLocationByCoordinates(
+                requestDto.getLongitude(), 
+                requestDto.getLatitude()
+        );
+
+        //좌표에 오프셋 적용하여 저장
+        LocationInfo offsetLocation = coordinateService.applyCoordinateOffset(
+                requestDto.getLongitude(), 
+                requestDto.getLatitude()
+        );
+
         RoomPost roomPost = RoomPost.builder()
                 .user(user)
                 .title(requestDto.getTitle())
-                .latitude(requestDto.getLatitude())
-                .longitude(requestDto.getLongitude())
+                .latitude(offsetLocation.getLatitude())
+                .longitude(offsetLocation.getLongitude())
                 .deposit(requestDto.getDeposit())
                 .monthlyRent(requestDto.getMonthlyRent())
                 .managementFee(requestDto.getManagementFee())
@@ -66,7 +80,11 @@ public class RoomPostService {
                 .minStayPeriod(requestDto.getMinStayPeriod())
                 .content(requestDto.getContent())
                 .photo(photoUrl)
-                .area(requestDto.getArea())
+                .area(locationInfo.getFullAddress())
+                .gu_name(locationInfo.getGuName())
+                .dong_name(locationInfo.getDongName())
+                .bjcd(locationInfo.getGuCode())
+                .cmd_cd(locationInfo.getDongCode())
                 .gender(user.getGender())
                 .isRecruiting(true)
                 .build();
@@ -83,7 +101,6 @@ public class RoomPostService {
         MatchedOptionsDto matchesFromPost = matchingService.getMatchedOptions(Objects.requireNonNull(desiredProfileRepository.findByUserId(roomPost.getUser().getId()).orElse(null)), Objects.requireNonNull(myProfileRepository.findByUserId(userId).orElse(null)));
 
         MatchedOptionsDto matchedOptionsDto = recommendationService.checkMatchedOptions(matchesFromLogin, matchesFromPost);
-
 
         RoomPostDto.RoomResponseDto result = RoomPostDto.RoomResponseDto.builder()
                 .roomPostId(roomPost.getRoomPostId())

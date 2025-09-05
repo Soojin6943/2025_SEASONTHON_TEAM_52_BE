@@ -3,6 +3,8 @@ package com.roommate.roommate.post.service;
 import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.UserRepository;
 import com.roommate.roommate.common.s3.S3Uploader;
+import com.roommate.roommate.location.service.CoordinateService;
+import com.roommate.roommate.location.dto.LocationInfo;
 import com.roommate.roommate.matching.MatchingService;
 import com.roommate.roommate.matching.RecommendationService;
 import com.roommate.roommate.matching.dto.RecommendationDto;
@@ -38,6 +40,7 @@ public class RoommatePostService {
     private final RoomPostRepository roomPostRepository;
     private final UserRepository userRepository;
     private final S3Uploader s3Uploader;
+    private final CoordinateService coordinateService;
     private final RecommendationService recommendationService;
     private final MatchingService matchingService;
     private final DesiredProfileRepository desiredProfileRepository;
@@ -56,26 +59,36 @@ public class RoommatePostService {
             photoUrl = s3Uploader.upload(photo);
         }
 
-        Set<HouseType> types = null;
-        if (requestDto.getHouseTypes() != null && !requestDto.getHouseTypes().isEmpty()) {
-            types = requestDto.getHouseTypes().stream()
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-        }
+        HouseType houseType = requestDto.getHouseType();
+
+        LocationInfo locationInfo = coordinateService.findLocationByCoordinates(
+                requestDto.getLongitude(), 
+                requestDto.getLatitude()
+        );
+
+        //좌표에 오프셋 적용하여 저장
+        LocationInfo offsetLocation = coordinateService.applyCoordinateOffset(
+                requestDto.getLongitude(), 
+                requestDto.getLatitude()
+        );
 
         RoommatePost roommatePost = RoommatePost.builder()
                 .user(user)
                 .title(requestDto.getTitle())
-                .latitude(requestDto.getLatitude())
-                .longitude(requestDto.getLongitude())
+                .latitude(offsetLocation.getLatitude())
+                .longitude(offsetLocation.getLongitude())
                 .deposit(requestDto.getDeposit())
                 .monthlyRent(requestDto.getMonthlyRent())
-                .houseTypes(types)
+                .houseType(houseType)
                 .moveInDate(requestDto.getMoveInDate())
                 .minStayPeriod(requestDto.getMinStayPeriod())
                 .content(requestDto.getContent())
                 .photo(photoUrl)
-                .area(requestDto.getArea())
+                .area(locationInfo.getFullAddress())
+                .gu_name(locationInfo.getGuName())
+                .dong_name(locationInfo.getDongName())
+                .bjcd(locationInfo.getGuCode())
+                .cmd_cd(locationInfo.getDongCode())
                 .gender(user.getGender())
                 .isRecruiting(true)
                 .build();
@@ -88,9 +101,7 @@ public class RoommatePostService {
         RoommatePost roommatePost = roommatePostRepository.findById(roommatePostId)
                 .orElseThrow();
 
-        List<HouseType> types = roommatePost.getHouseTypes()
-                .stream()
-                .toList();
+        HouseType houseType = roommatePost.getHouseType();
 
         MatchedOptionsDto matchesFromLogin = matchingService.getMatchedOptions(Objects.requireNonNull(desiredProfileRepository.findByUserId(userId).orElse(null)), Objects.requireNonNull(myProfileRepository.findByUserId(roommatePost.getUser().getId()).orElse(null)));
         MatchedOptionsDto matchesFromPost = matchingService.getMatchedOptions(Objects.requireNonNull(desiredProfileRepository.findByUserId(roommatePost.getUser().getId()).orElse(null)), Objects.requireNonNull(myProfileRepository.findByUserId(userId).orElse(null)));
@@ -110,7 +121,7 @@ public class RoommatePostService {
                 .longitude(roommatePost.getLongitude())
                 .deposit(roommatePost.getDeposit())
                 .monthlyRent(roommatePost.getMonthlyRent())
-                .houseTypes(types)
+                .houseType(houseType)
                 .moveInDate(roommatePost.getMoveInDate())
                 .minStayPeriod(roommatePost.getMinStayPeriod())
                 .content(roommatePost.getContent())
@@ -146,6 +157,7 @@ public class RoommatePostService {
                     .title(roommatePost.getTitle())
                     .deposit(roommatePost.getDeposit())
                     .monthlyRent(roommatePost.getMonthlyRent())
+                    .houseType(roommatePost.getHouseType())
                     .build();
             list.add(listDto);
         }
@@ -158,7 +170,6 @@ public class RoommatePostService {
     public RoommatePostDto.RoommateList getMatchingRoommatePosts(
             Long userId, String area, Integer depositMin, Integer depositMax, Integer rentMin, Integer rentMax, String houseType, MoveInDate moveInDate, Integer minStayPeriod) {
         List<HouseType> houseTypeList;
-        log.info("getMatchingRoommatePosts: {}", houseType);
         if (houseType != null) {
             houseTypeList = Arrays.stream(houseType.split(","))
                     .map(HouseType::valueOf)
@@ -166,9 +177,7 @@ public class RoommatePostService {
         } else {
             houseTypeList = null;
         }
-        log.info("추천유저 반환");
         List<RecommendationDto> recommendDtos = recommendationService.getRecommendations(userId, area, false);
-        log.info("recommendDtos: {}", recommendDtos);
         List<Long> userIds = new ArrayList<>();
         for (RecommendationDto recommendDto : recommendDtos) {
             Long id = recommendDto.getUserId();
@@ -196,6 +205,7 @@ public class RoommatePostService {
                     .title(sortedPost.getTitle())
                     .deposit(sortedPost.getDeposit())
                     .monthlyRent(sortedPost.getMonthlyRent())
+                    .houseType(sortedPost.getHouseType())
                     .build();
             list.add(listDto);
         }
