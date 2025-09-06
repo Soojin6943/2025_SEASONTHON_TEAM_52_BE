@@ -2,6 +2,7 @@ package com.roommate.roommate.post.dto;
 
 import com.roommate.roommate.post.entity.HouseType;
 import com.roommate.roommate.post.entity.MoveInDate;
+import com.roommate.roommate.post.entity.RoomNum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
@@ -29,6 +30,9 @@ public class RoomCreateRequestDto {
     
     @Schema(description = "주거 형태", example = "APARTMENT")
     private HouseType houseType;
+
+    @Schema(description = "방 개수", example = "ONE_ROOM")
+    private RoomNum roomNum;
     
     @Schema(description = "방 크기 (평방미터)", example = "25.5")
     private Double size;

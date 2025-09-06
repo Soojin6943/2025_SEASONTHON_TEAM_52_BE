@@ -60,7 +60,7 @@ public class RoomPostService {
                 requestDto.getLatitude()
         );
 
-        //좌표에 오프셋 적용하여 저장
+        //좌표에 오프셋 적용하여 저장데이터는는
         LocationInfo offsetLocation = coordinateService.applyCoordinateOffset(
                 requestDto.getLongitude(), 
                 requestDto.getLatitude()
@@ -75,6 +75,7 @@ public class RoomPostService {
                 .monthlyRent(requestDto.getMonthlyRent())
                 .managementFee(requestDto.getManagementFee())
                 .houseType(requestDto.getHouseType())
+                .roomNum(requestDto.getRoomNum())
                 .size(requestDto.getSize())
                 .moveInDate(requestDto.getMoveInDate())
                 .minStayPeriod(requestDto.getMinStayPeriod())
@@ -117,6 +118,7 @@ public class RoomPostService {
                 .monthlyRent(roomPost.getMonthlyRent())
                 .managementFee(roomPost.getManagementFee())
                 .houseType(roomPost.getHouseType())
+                .roomNum(roomPost.getRoomNum())
                 .size(roomPost.getSize())
                 .moveInDate(roomPost.getMoveInDate())
                 .minStayPeriod(roomPost.getMinStayPeriod())
