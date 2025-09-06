@@ -47,7 +47,7 @@ public class RecommendationController {
     }
 
     @GetMapping("/roommate-posts")
-    public ResponseEntity<SuccessResponse<List<RoommatePostRecommendationDto>>> getRoommateRecommendations(
+    public ResponseEntity<SuccessResponse<List<RoommatePostRecommendationDto>>> getRoommatePosts(
             HttpSession session,
             @RequestParam(value = "area", required = true) String area
     ){
@@ -57,7 +57,7 @@ public class RecommendationController {
     }
 
     @GetMapping("/room-posts")
-    public ResponseEntity<SuccessResponse<List<RoomPostRecommendationDto>>> getRoommatePosts(
+    public ResponseEntity<SuccessResponse<List<RoomPostRecommendationDto>>> getRoomPosts(
             HttpSession session,
             @RequestParam(value = "area", required = true) String area
     ){
