@@ -2,6 +2,7 @@ package com.roommate.roommate.post.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roommate.roommate.common.SuccessResponse;
+import com.roommate.roommate.matching.dto.RoommatePostRecommendationDto;
 import com.roommate.roommate.post.dto.RoommateCreateRequestDto;
 import com.roommate.roommate.post.dto.RoommatePostDto;
 import com.roommate.roommate.post.entity.MoveInDate;
@@ -16,6 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/roommate-posts")
@@ -77,7 +80,7 @@ public class RoommatePostController {
     }
 
     @GetMapping("/matching")
-    public ResponseEntity<SuccessResponse<RoommatePostDto.RoommateList>> getMatchingRoommatePosts(
+    public ResponseEntity<SuccessResponse<List<RoommatePostRecommendationDto>>> getMatchingRoommatePosts(
             HttpSession session,
             @RequestParam(required = false) Integer depositMin,
             @RequestParam(required = false) Integer depositMax,
@@ -89,7 +92,7 @@ public class RoommatePostController {
             @RequestParam(required = true) String area
     ) {
         Long userId = (Long) session.getAttribute("userId");
-        RoommatePostDto.RoommateList dto = roommatePostService.getMatchingRoommatePosts(userId, area, depositMin, depositMax, rentMin, rentMax, houseType, moveInDate, minStay);
+        List<RoommatePostRecommendationDto> dto = roommatePostService.getMatchingRoommatePosts(userId, area, depositMin, depositMax, rentMin, rentMax, houseType, moveInDate, minStay);
         return SuccessResponse.onSuccess("모집글들을 성공적으로 조회했습니다.", HttpStatus.OK, dto);
     }
 }
