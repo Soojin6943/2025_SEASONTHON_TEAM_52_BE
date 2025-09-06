@@ -8,6 +8,8 @@ import com.roommate.roommate.location.dto.LocationInfo;
 import com.roommate.roommate.matching.MatchingService;
 import com.roommate.roommate.matching.RecommendationService;
 import com.roommate.roommate.matching.dto.RecommendationDto;
+import com.roommate.roommate.matching.dto.RoomPostRecommendationDto;
+import com.roommate.roommate.matching.dto.RoommatePostRecommendationDto;
 import com.roommate.roommate.matching.repository.DesiredProfileRepository;
 import com.roommate.roommate.matching.repository.MyProfileRepository;
 import com.roommate.roommate.post.dto.MatchedOptionsDto;
@@ -169,7 +171,19 @@ public class RoomPostService {
         result.setPosts(list);
         return result;
     }
-    public RoomPostDto.RoomList getMatchingRoomPosts(Long userId, String area, Integer depositMin, Integer depositMax, Integer rentMin, Integer rentMax, String houseType, MoveInDate moveInDate, Integer minStayPeriod) {
+    public List<RoomPostRecommendationDto> getMatchingRoomPosts(Long userId, String area, Integer depositMin, Integer depositMax, Integer rentMin, Integer rentMax, String houseType, MoveInDate moveInDate, Integer minStayPeriod) {
+
+        List<RecommendationDto> recs = recommendationService.getRecommendations(userId, area, true);
+        if (recs.isEmpty()) return List.of();
+
+        Map<Long, Integer> order = new HashMap<>();
+        Map<Long, RecommendationDto> recByUser = new HashMap<>();
+        for (int i = 0; i < recs.size(); i++) {
+            RecommendationDto r = recs.get(i);
+            order.put(r.getUserId(), i);
+            recByUser.put(r.getUserId(), r);
+        }
+
         List<HouseType> houseTypeList;
         if (houseType != null) {
             houseTypeList = Arrays.stream(houseType.split(","))
@@ -178,40 +192,43 @@ public class RoomPostService {
         } else {
             houseTypeList = null;
         }
-        List<RecommendationDto> recommendDtos = recommendationService.getRecommendations(userId, area, true);
-        List<Long> userIds = new ArrayList<>();
-        for (RecommendationDto recommendDto : recommendDtos) {
-            Long id = recommendDto.getUserId();
-            userIds.add(id);
-        }
 
         List<RoomPost> roomPosts = roomPostRepository.filterPosts(area, depositMin, depositMax, rentMin, rentMax, houseTypeList, moveInDate, minStayPeriod);
-        Map<Long, Integer> orderMap = new HashMap<>();
-        for (int i = 0; i< userIds.size(); i++) {
-            orderMap.put(userIds.get(i), i);
-        }
-        List<RoomPost> sortedPosts = roomPosts.stream()
-                .filter(post -> orderMap.containsKey(post.getUser().getId()))
-                .sorted(Comparator.comparingInt(post -> orderMap.get(post.getUser().getId())))
-                .collect(Collectors.toList());
 
-        List<RoomListDto> list = new ArrayList<>();
-        for (RoomPost sortedPost : sortedPosts) {
-            RoomListDto listDto = RoomListDto.builder()
-                    .roomPostId(sortedPost.getRoomPostId())
-                    .userId(sortedPost.getUser().getId())
-                    .username(sortedPost.getUser().getUsername())
-                    .userProfile(sortedPost.getUser().getProfileImageUrl())
-                    .age(sortedPost.getUser().getAge())
-                    .title(sortedPost.getTitle())
-                    .deposit(sortedPost.getDeposit())
-                    .monthlyRent(sortedPost.getMonthlyRent())
+        List<RoomPost> sortedPosts = roomPosts.stream()
+                .filter(post -> order.containsKey(post.getUser().getId()))
+                .sorted(Comparator.comparingInt(post -> order.get(post.getUser().getId())))
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toMap(
+                                p -> p.getUser().getId(),
+                                p -> p,
+                                (p1, p2) -> p1,          // 같은 유저의 다수 글이 있으면 추천순에서 먼저 온 것 채택
+                                LinkedHashMap::new
+                        ),
+                        m -> new ArrayList<>(m.values())
+                ));
+
+        List<RoomPostRecommendationDto> list = new ArrayList<>();
+        for (RoomPost p : sortedPosts) {
+            Long uid = p.getUser().getId();
+            User u = p.getUser();
+            RecommendationDto r = recByUser.get(uid);
+
+            RoomPostRecommendationDto listDto = RoomPostRecommendationDto.builder()
+                    .roomPostId(p.getRoomPostId())
+                    .userId(uid)
+                    .username(u.getUsername())
+                    .userProfile(u.getProfileImageUrl())
+                    .age(u.getAge())
+                    .score(r != null ? r.getAverageScore() : 0.0)
+                    .matchedOptions(r != null ? r.getMatchedOptions() : null)
+                    .title(p.getTitle())
+                    .deposit(p.getDeposit())
+                    .monthlyRent(p.getMonthlyRent())
                     .build();
             list.add(listDto);
         }
 
-        RoomPostDto.RoomList result = new RoomPostDto.RoomList();
-        result.setPosts(list);
-        return result;
+        return list;
     }
 }

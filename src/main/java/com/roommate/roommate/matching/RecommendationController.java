@@ -57,7 +57,7 @@ public class RecommendationController {
     }
 
     @GetMapping("/room-posts")
-    public ResponseEntity<SuccessResponse<List<RoomPostRecommendationDto>>> getRoommatePosts(
+    public ResponseEntity<SuccessResponse<List<RoomPostRecommendationDto>>> getRoomPosts(
             HttpSession session,
             @RequestParam(value = "area", required = true) String area
     ){

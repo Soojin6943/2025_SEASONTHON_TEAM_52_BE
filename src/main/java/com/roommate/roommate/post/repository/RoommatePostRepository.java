@@ -24,7 +24,7 @@ public interface RoommatePostRepository extends JpaRepository<RoommatePost, Long
      * 4. 성별(gender)이 일치하는
      * 후보자(User) 목록을 조회
      */
-    @Query("SELECT p.user FROM RoomPost p WHERE p.isRecruiting = true AND p.user.id != :userId AND p.area = :location AND p.gender = :gender")
+    @Query("SELECT p.user FROM RoommatePost p WHERE p.isRecruiting = true AND p.user.id != :userId AND p.area = :location AND p.gender = :gender")
     List<User> findActiveCandidates(
             @Param("userId") Long userId,
             @Param("location") String location,
