@@ -22,6 +22,7 @@ import com.roommate.roommate.post.repository.RoomPostRepository;
 import com.roommate.roommate.post.repository.RoommatePostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class RoomPostService {
     private final DesiredProfileRepository desiredProfileRepository;
     private final MyProfileRepository myProfileRepository;
 
+    @Transactional
     public Long createRoomPost(MultipartFile photo, RoomCreateRequestDto requestDto, Long userId) {
 
         User user = userRepository.findById(userId).orElseThrow();
@@ -91,6 +93,10 @@ public class RoomPostService {
                 .build();
 
         roomPostRepository.save(roomPost);
+
+        user.setActive(true);
+        userRepository.save(user);
+
         return roomPost.getRoomPostId();
     }
 

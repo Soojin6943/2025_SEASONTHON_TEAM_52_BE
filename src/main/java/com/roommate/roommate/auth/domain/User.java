@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
         indexes = @Index(name = "uk_users_username", columnList = "username", unique = true)
 )
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
