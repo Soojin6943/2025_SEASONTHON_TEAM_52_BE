@@ -16,9 +16,10 @@ public class DetailProfileDto {
     private int age;
     private Gender gender;
     private Mbti mbti;
+    private boolean isActive;
+    private String introduction;
+
 
     private ProfileDto myProfile;
     private DesiredProfileDto desiredProfile;
-
-    // TODO 서비스 만들기
 }

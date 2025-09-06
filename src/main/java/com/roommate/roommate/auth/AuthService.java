@@ -2,7 +2,6 @@ package com.roommate.roommate.auth;
 
 import com.roommate.roommate.auth.domain.Gender;
 import com.roommate.roommate.auth.domain.User;
-import com.roommate.roommate.auth.dto.AuthResponse;
 import com.roommate.roommate.auth.dto.DetailProfileDto;
 import com.roommate.roommate.auth.dto.LoginRequest;
 import com.roommate.roommate.common.s3.S3Uploader;
@@ -161,6 +160,8 @@ public class AuthService {
                 .age(user.getAge())
                 .mbti(user.getMbti())
                 .gender(user.getGender())
+                .introduction(user.getIntroduction())
+                .isActive(user.isActive())
                 .myProfile(myProfileDto)      // 수정된 필드명 적용
                 .desiredProfile(desiredProfileDto) // 수정된 필드명 적용
                 .build();
