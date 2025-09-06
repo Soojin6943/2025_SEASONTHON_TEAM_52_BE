@@ -3,6 +3,7 @@ package com.roommate.roommate.auth;
 import com.roommate.roommate.auth.domain.User;
 import com.roommate.roommate.auth.dto.*;
 import com.roommate.roommate.common.SuccessResponse;
+import com.roommate.roommate.matching.DesiredProfileService;
 import com.roommate.roommate.matching.dto.ProfileDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 public class AuthController {
 
     private final AuthService authService;
+    private final DesiredProfileService desiredProfileService;
 
     @Operation(summary = "로그인(없으면 자동 회원가입)")
     @PostMapping("/login")
@@ -74,7 +76,7 @@ public class AuthController {
 
     @Operation(summary = "프로필 조회")
     @GetMapping("/profile")
-    public ResponseEntity<UserProfile> getProfile(HttpSession session) {
+    public ResponseEntity<UserProfileDto> getProfile(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         
         if (userId == null) {
@@ -82,11 +84,14 @@ public class AuthController {
         }
 
         User user = authService.findById(userId);
-        
+
         // 스페이스 소속 여부를 실제 데이터에서 조회하여 업데이트
         authService.updateUserSpaceStatusFromDatabase(userId);
+
+        // 이상형 프로필 유무
+        Boolean isDesired = desiredProfileService.isDesired(userId);
         
-        UserProfile profile = new UserProfile(
+        UserProfileDto profile = new UserProfileDto(
                 user.getId(),
                 user.getUsername(),
                 user.getAge(),
@@ -94,7 +99,13 @@ public class AuthController {
                 user.getIntroduction(),
                 user.getPreferredLocationEmdCd(),
                 user.isHasSpace(),
-                user.getKakaoOpenChatLink()
+                user.getKakaoOpenChatLink(),
+                user.isActive(),
+                user.getMyProfile().getLifeCycle(),
+                user.getMyProfile().getTidyLevel(),
+                user.getMyProfile().getSmoking(),
+                user.getMyProfile().getNoisePreference(),
+                isDesired
         );
         
         return ResponseEntity.ok(profile);

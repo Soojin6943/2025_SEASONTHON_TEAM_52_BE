@@ -161,6 +161,8 @@ public class AuthService {
                 .age(user.getAge())
                 .mbti(user.getMbti())
                 .gender(user.getGender())
+                .introduction(user.getIntroduction())
+                .isActive(user.isActive())
                 .myProfile(myProfileDto)      // 수정된 필드명 적용
                 .desiredProfile(desiredProfileDto) // 수정된 필드명 적용
                 .build();

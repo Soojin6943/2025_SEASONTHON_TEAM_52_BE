@@ -43,4 +43,13 @@ public class DesiredProfileService {
 
         return desiredProfileRepository.save(desiredProfile);
     }
+
+    // 이상형 프로필 유뮤
+    public boolean isDesired(Long userId){
+        if (desiredProfileRepository.findByUserId(userId) != null){
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
