@@ -8,6 +8,7 @@ import com.roommate.roommate.location.dto.LocationInfo;
 import com.roommate.roommate.matching.MatchingService;
 import com.roommate.roommate.matching.RecommendationService;
 import com.roommate.roommate.matching.dto.RecommendationDto;
+import com.roommate.roommate.matching.dto.RoommatePostRecommendationDto;
 import com.roommate.roommate.matching.repository.DesiredProfileRepository;
 import com.roommate.roommate.matching.repository.MyProfileRepository;
 import com.roommate.roommate.post.dto.MatchedOptionsDto;
@@ -173,52 +174,72 @@ public class RoommatePostService {
         return result;
     }
 
-    public RoommatePostDto.RoommateList getMatchingRoommatePosts(
+    public List<RoommatePostRecommendationDto> getMatchingRoommatePosts(
             Long userId, String area, Integer depositMin, Integer depositMax, Integer rentMin, Integer rentMax, String houseType, MoveInDate moveInDate, Integer minStayPeriod) {
-        List<HouseType> houseTypeList;
-        if (houseType != null) {
+        List<RecommendationDto> recs = recommendationService.getRecommendations(userId, area, false);
+        if (recs.isEmpty()) return List.of();
+
+        Map<Long, Integer> order = new HashMap<>();
+        Map<Long, RecommendationDto> recByUser = new HashMap<>();
+        for (int i = 0; i < recs.size(); i++) {
+            RecommendationDto r = recs.get(i);
+            order.put(r.getUserId(), i);
+            recByUser.put(r.getUserId(), r);
+        }
+
+        // 2) houseType 파싱 (위 로직 유지 + 공백 트림 보강)
+        List<HouseType> houseTypeList = null;
+        if (houseType != null && !houseType.isBlank()) {
             houseTypeList = Arrays.stream(houseType.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
                     .map(HouseType::valueOf)
-                    .toList();
-        } else {
-            houseTypeList = null;
-        }
-        List<RecommendationDto> recommendDtos = recommendationService.getRecommendations(userId, area, false);
-        List<Long> userIds = new ArrayList<>();
-        for (RecommendationDto recommendDto : recommendDtos) {
-            Long id = recommendDto.getUserId();
-            userIds.add(id);
+                    .collect(Collectors.toList());
+            if (houseTypeList.isEmpty()) houseTypeList = null;
         }
 
-        List<RoommatePost> roommatePosts = roommatePostRepository.filterPosts(area, depositMin, depositMax, rentMin, rentMax, houseTypeList, moveInDate, minStayPeriod);
-        Map<Long, Integer> orderMap = new HashMap<>();
-        for (int i = 0; i < userIds.size(); i++) {
-            orderMap.put(userIds.get(i), i);
-        }
-        List<RoommatePost> sortedPosts = roommatePosts.stream()
-                .filter(post -> orderMap.containsKey(post.getUser().getId()))
-                .sorted(Comparator.comparingInt(post -> orderMap.get(post.getUser().getId())))
-                .collect(Collectors.toList());
+        // 3) 필터 적용해 게시글 조회
+        List<RoommatePost> roommatePosts = roommatePostRepository.filterPosts(
+                area, depositMin, depositMax, rentMin, rentMax, houseTypeList, moveInDate, minStayPeriod);
 
-        List<RoommateListDto> list = new ArrayList<>();
-        for (RoommatePost sortedPost : sortedPosts) {
-            RoommateListDto listDto = RoommateListDto.builder()
-                    .roommatePostId(sortedPost.getRoommatePostId())
-                    .userId(sortedPost.getUser().getId())
-                    .username(sortedPost.getUser().getUsername())
-                    .userProfile(sortedPost.getUser().getProfileImageUrl())
-                    .age(sortedPost.getUser().getAge())
-                    .title(sortedPost.getTitle())
-                    .deposit(sortedPost.getDeposit())
-                    .monthlyRent(sortedPost.getMonthlyRent())
-                    .houseType(sortedPost.getHouseType())
+        // 4) 추천 유저와 교집합만 남기고, 추천순(order)으로 정렬 후 "유저당 1개" 게시글만 선택
+        List<RoommatePost> sortedDistinctByUser = roommatePosts.stream()
+                .filter(p -> order.containsKey(p.getUser().getId()))
+                .sorted(Comparator.comparingInt(p -> order.get(p.getUser().getId())))
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toMap(
+                                p -> p.getUser().getId(),
+                                p -> p,
+                                (p1, p2) -> p1,          // 같은 유저의 다수 글이 있으면 추천순에서 먼저 온 것 채택
+                                LinkedHashMap::new
+                        ),
+                        m -> new ArrayList<>(m.values())
+                ));
+
+        // 5) 반환 DTO 매핑 (첫 번째 메서드와 동일한 형태)
+        List<RoommatePostRecommendationDto> results = new ArrayList<>();
+        for (RoommatePost p : sortedDistinctByUser) {
+            Long uid = p.getUser().getId();
+            User u = p.getUser();
+            RecommendationDto r = recByUser.get(uid);
+
+            RoommatePostRecommendationDto dto = RoommatePostRecommendationDto.builder()
+                    .roommatePostId(p.getRoommatePostId())
+                    .userId(uid)
+                    .username(u.getUsername())
+                    .userProfile(u.getProfileImageUrl())
+                    .age(u.getAge())
+                    .mbti(u.getMbti())
+                    .score(r != null ? r.getAverageScore() : 0.0)
+                    .matchedOptions(r != null ? r.getMatchedOptions() : null)
+                    .title(p.getTitle())
+                    .deposit(p.getDeposit())
+                    .monthlyRent(p.getMonthlyRent())
                     .build();
-            list.add(listDto);
+
+            results.add(dto);
         }
 
-        RoommatePostDto.RoommateList result = new RoommatePostDto.RoommateList();
-        result.setPosts(list);
-        return result;
-
+        return results;
     }
 }
