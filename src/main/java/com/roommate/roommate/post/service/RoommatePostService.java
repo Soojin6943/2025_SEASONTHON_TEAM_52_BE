@@ -21,6 +21,7 @@ import com.roommate.roommate.post.entity.RoommatePost;
 import com.roommate.roommate.post.repository.RoomPostRepository;
 import com.roommate.roommate.post.repository.RoommatePostRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,7 @@ public class RoommatePostService {
     private final DesiredProfileRepository desiredProfileRepository;
     private final MyProfileRepository myProfileRepository;
 
+    @Transactional
     public Long createRoommatePost(MultipartFile photo, RoommateCreateRequestDto requestDto, Long userId) throws IOException {
         User user = userRepository.findById(userId)
                 .orElseThrow();
@@ -94,6 +96,10 @@ public class RoommatePostService {
                 .build();
 
         roommatePostRepository.save(roommatePost);
+
+        user.setActive(true);
+        userRepository.save(user);
+
         return roommatePost.getRoommatePostId();
     }
 

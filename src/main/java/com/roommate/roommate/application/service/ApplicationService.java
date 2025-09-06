@@ -166,6 +166,11 @@ public class ApplicationService {
 
         applicationRepository.save(application);
 
+        User user = userRepository.findById(userId).orElseThrow();
+
+        user.setActive(false);
+        userRepository.save(user);
+
         ApplicationConfirmDto result = ApplicationConfirmDto.builder()
                 .applicationId(application.getApplicationId())
                 .roommatePostId((application.getRoommatePost() == null) ? null : application.getRoommatePost().getRoommatePostId())
